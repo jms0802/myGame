@@ -5,6 +5,9 @@ const connectDb = require("./config/db");
 const cookieParser = require("cookie-parser");
 const path = require('path');
 
+const passport = require('passport');
+require('./config/passport');
+
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -15,6 +18,7 @@ app.use(expressLayouts);
 app.set('view engine', 'ejs');
 app.set("views", "./views");
 app.use(express.static('public'));
+app.use(passport.initialize());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

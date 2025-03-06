@@ -10,6 +10,9 @@
             <input type="password" id="password" name="password" required>
         </div>
         <button type="submit">로그인</button>
+        <a href="/auth/google" class="google-login-btn">
+            Google로 로그인
+        </a>
         <p id="error-message" style="color: red;"></p>
     </form>
 </div>
@@ -36,3 +39,14 @@
         }
     });
 </script>
+<style>
+    .google-login-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #4285f4;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+</style>
