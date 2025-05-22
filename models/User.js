@@ -5,12 +5,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true
-    },
+    }, // 통합 ID
     email: String,
-    googleId: String,
     password: {
         type: String,
     },
+    googleId: String,
+    nickname: String,
     createdAt: {
         type: Date,
         default: Date.now

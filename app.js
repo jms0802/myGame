@@ -26,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // 라우트 설정
+app.use('/', require('./routes/index'));
 app.use('/', require('./routes/auth'));
 
 const server = app.listen(port, () => {
