@@ -1,6 +1,6 @@
 <div class="register-container">
     <h2>회원가입</h2>
-    <form action="/register" method="POST" id="registerForm">
+    <form action="/auth/register" method="POST" id="registerForm">
         <div class="form-group">
             <div class="label-container">
                 <label for="username">아이디</label>
@@ -40,13 +40,13 @@
         <div class="social-login">
             <p>또는</p>
             <a href="/auth/google" class="google-login-btn">
-                Google로 회원가입
+                Google 로그인
             </a>
         </div>
     <% } %>
 
     <div class="login-link">
-        이미 계정이 있으신가요? <a href="/login">로그인</a>
+        이미 계정이 있으신가요? <a href="/auth/login">로그인</a>
     </div>
 </div>
 <script>
@@ -74,7 +74,7 @@
             return;
         }
 
-        const response = await fetch("/register", {
+        const response = await fetch("/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, nickname, email, password })
@@ -99,7 +99,7 @@
         }
 
         try {
-            const response = await fetch('/register/check-id', {
+            const response = await fetch('/auth/register/check-id', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

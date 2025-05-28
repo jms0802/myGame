@@ -27,7 +27,7 @@ app.use(cookieParser());
 
 // 라우트 설정
 app.use('/', require('./routes/index'));
-app.use('/', require('./routes/auth'));
+app.use('/auth', require('./routes/auth'));
 
 const server = app.listen(port, () => {
     console.log(`App Listening on port ${port}`);

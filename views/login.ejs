@@ -1,6 +1,6 @@
 <div class="login-container">
     <h2>로그인</h2>
-    <form action="/login" method="POST" id="loginForm">
+    <form action="/auth/login" method="POST" id="loginForm">
         <div class="form-group">
             <label for="username">아이디:</label>
             <input type="text" id="username" name="username" required>
@@ -15,7 +15,7 @@
             Google 로그인
         </a>
         <div class="register-link">
-            계정이 없으신가요? <a href="/register">회원가입</a>
+            계정이 없으신가요? <a href="/auth/register">회원가입</a>
         </div>
     </form>
 </div>
@@ -27,7 +27,7 @@
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
 
-        const response = await fetch("/login", {
+        const response = await fetch("/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
