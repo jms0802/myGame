@@ -1,0 +1,22 @@
+.dark {
+  background-color: #181818;
+  color: #eee;
+}
+
+.dark .game-container {
+  background-color: #222;
+  color: #eee;
+}
+
+.dark .game-cell {
+  background-color: #333;
+  border-color: #666;
+}
+
+.dark .robot {
+  border-color: #222;
+}
+
+.dark .target {
+  border: 2px solid #222;
+}

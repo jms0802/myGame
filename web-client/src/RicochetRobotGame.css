@@ -1,0 +1,247 @@
+/* 게임 컨테이너 */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    background-color: #dbdbdb;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  /* 게임 제목 */
+  .game-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 24px;
+    color: #333;
+    text-align: center;
+  }
+  
+  /* 게임 정보 섹션 */
+  .game-info {
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  
+  .selected-robot {
+    font-size: 1.125rem;
+    margin-bottom: 8px;
+  }
+  
+  .robot-name {
+    font-weight: bold;
+  }
+  
+  .move-count {
+    font-size: 1.125rem;
+    margin-bottom: 8px;
+  }
+  
+  .count {
+    font-weight: bold;
+    color: #2563eb;
+  }
+  
+  .instructions {
+    font-size: 0.875rem;
+    color: #666;
+  }
+  
+  /* 게임 보드 */
+  .game-board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 0;
+    border: 2px solid #333;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+  }
+  
+  /* 게임 셀 */
+  .game-cell {
+    box-sizing: border-box;
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border: 1px solid;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .game-cell:hover {
+    background-color: #f9f9f9;
+  }
+  
+  /* 목표 지점 */
+  .target {
+    width: 24px;
+    height: 24px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    border: 2px solid white;
+    opacity: 0.8;
+    position: absolute;
+  }
+  
+  /* 로봇 */
+  .robot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+  }
+  
+  .robot.selected {
+    border-color: black;
+    border-width: 2px;
+  }
+  
+  /* 컨트롤 섹션 */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  /* 로봇 버튼들 */
+  .robot-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .robot-button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    color: white;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    font-size: 0.875rem;
+  }
+  
+  .robot-button:hover {
+    opacity: 0.9;
+  }
+  
+  .robot-button.active {
+    border-color: black;
+  }
+  
+  /* 리셋 버튼 */
+  .reset-button {
+    padding: 12px 24px;
+    background-color: #6b7280;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+  }
+  
+  .reset-button:hover {
+    background-color: #4b5563;
+    border-color: #9ca3af;
+  }
+  
+  /* 게임 설명 */
+  .game-instructions {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #666;
+  }
+  
+  .game-instructions p {
+    margin: 4px 0;
+  }
+
+  /* 클리어 팝업 */
+  .clear-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 1000;
+    animation: fadeInOut 2s ease-in-out;
+  }
+  
+  @keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 768px) {
+    .game-container {
+      padding: 16px;
+    }
+    
+    .game-title {
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+    }
+    
+    .game-cell {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .robot {
+      width: 28px;
+      height: 28px;
+      font-size: 0.75rem;
+    }
+    
+    .target {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .robot-buttons {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .game-cell {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .robot {
+      width: 24px;
+      height: 24px;
+      font-size: 0.625rem;
+    }
+    
+    .target {
+      width: 16px;
+      height: 16px;
+    }
+  }
