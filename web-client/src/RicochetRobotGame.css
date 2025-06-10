@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px;
+    padding: 10px 30px;
     background-color: #dbdbdb;
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -35,7 +35,7 @@
   
   .move-count {
     font-size: 1.125rem;
-    margin-bottom: 8px;
+    margin: 5px 0px;
   }
   
   .count {
@@ -120,7 +120,7 @@
   /* 로봇 버튼들 */
   .robot-buttons {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
   
@@ -223,7 +223,7 @@
     }
     
     .robot-buttons {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
     }
   }
@@ -244,4 +244,57 @@
       width: 16px;
       height: 16px;
     }
+  }
+
+  /* 다크 모드 스타일 */
+  .dark .game-container {
+    background-color: #1a1a1a;
+  }
+
+  .dark .game-title {
+    color: #e0e0e0;
+  }
+
+  .dark .instructions {
+    color: #b0b0b0;
+  }
+
+  .dark .game-board {
+    background-color: #2d2d2d;
+    border-color: #404040;
+  }
+
+  .dark .game-cell {
+    background-color: #2d2d2d;
+    border-color: #404040;
+  }
+
+  .dark .game-cell:hover {
+    background-color: #363636;
+  }
+
+  .dark .game-instructions {
+    color: #b0b0b0;
+  }
+
+  .dark .count {
+    color: #60a5fa;
+  }
+
+  .dark .robot-button {
+    border-color: #404040;
+  }
+
+  .dark .robot.selected {
+    border-color: #e0e0e0;
+  }
+
+  .dark .reset-button {
+    background-color: #404040;
+    border-color: #505050;
+  }
+
+  .dark .reset-button:hover {
+    background-color: #505050;
+    border-color: #606060;
   }

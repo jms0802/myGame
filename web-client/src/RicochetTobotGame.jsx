@@ -109,7 +109,7 @@ const generateUniquePositions = () => {
   return { robots, target: {...targetPosition, color:targetColor} };
 };
 
-const RicochetRobotGame = () => {
+const RicochetRobotGame = ({ dark }) => {
   const { robots: initialRobots, target: initialTarget } = generateUniquePositions();
 
   const [board] = useState(createInitialBoard);
@@ -120,6 +120,7 @@ const RicochetRobotGame = () => {
   const [prevRobots, setPrevRobots] = useState(initialRobots);
   const [highlightedCells, setHighlightedCells] = useState([]);
   const [showClearMessage, setShowClearMessage] = useState(false);
+  const [clearMoveCount, setClearMoveCount] = useState(0);
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
   const calculateHighlightedCells = useCallback((robot) => {
@@ -339,19 +340,27 @@ const RicochetRobotGame = () => {
         
         // 타겟에 도달했다면
         if (targetReached) {
+          setClearMoveCount(moveCount+1);  // 현재 무브 카운트 저장
+          setMoveCount(0);  // 무브 카운트 즉시 초기화
           setShowClearMessage(true);
           setSelectedRobot(null);
-          setMoveCount(0);
-          // 2초 후 메시지 숨기기
+          
           setTimeout(() => {
             setShowClearMessage(false);
-          }, 2000);
+          }, 1500);
 
           // 새로운 타겟 생성
           let newTargetPosition;
+          let attempts = 0;
+          const maxAttempts = 100; // 무한 루프 방지
+
           do {
             newTargetPosition = generateRandomPosition();
-          } while (robots.some(r => r.x === newTargetPosition.x && r.y === newTargetPosition.y));
+            attempts++;
+            // 로봇 위치와 겹치지 않는지 확인
+            const isOverlapping = robots.some(r => r.x === newTargetPosition.x && r.y === newTargetPosition.y);
+            if (!isOverlapping || attempts >= maxAttempts) break;
+          } while (attempts < maxAttempts);
 
           // 랜덤 색상 선택
           const newTargetColor = Object.values(ROBOT_COLORS)[Math.floor(Math.random() * 4)];
@@ -504,8 +513,10 @@ const RicochetRobotGame = () => {
       borderRightWidth: cell.walls.has(WALL_TYPES.RIGHT) ? '4px' : '1px',
       borderBottomWidth: cell.walls.has(WALL_TYPES.BOTTOM) ? '4px' : '1px',
       borderLeftWidth: cell.walls.has(WALL_TYPES.LEFT) ? '4px' : '1px',
-      borderColor: 'dimgray',
-      backgroundColor: isHighlighted ? 'rgba(144, 238, 144, 0.3)' : 'white',
+      borderColor: dark ? '#dedede' : 'dimgray',
+      backgroundColor: isHighlighted 
+        ? (dark ? 'rgba(144, 238, 144, 0.2)' : 'rgba(144, 238, 144, 0.3)')
+        : (dark ? '#434343' : 'white'),
       cursor: (robot || isHighlighted) ? 'pointer' : 'default'
     };
 
@@ -548,18 +559,19 @@ const RicochetRobotGame = () => {
 
   return (
     <div className="game-container">
+      {console.log(dark)}
       <h1 className="game-title">리코셰 로봇</h1>
 
       {/* 클리어 메시지 */}
       {showClearMessage && (
         <div className="clear-message">
           <h2>클리어!</h2>
-          <p>새로운 타겟이 생성되었습니다.</p>
+          <p>이동 횟수: <span className="count">{clearMoveCount}</span></p>
         </div>
       )}
 
       <div className="game-info">
-        <p className="selected-robot">
+        {/* <p className="selected-robot">
           선택된 로봇:{" "}
           {selectedRobot ? (
             <span
@@ -573,12 +585,12 @@ const RicochetRobotGame = () => {
           ) : (
             "없음"
           )}
-        </p>
+        </p> */}
         <p className="move-count">
           이동 횟수: <span className="count">{moveCount}</span>
         </p>
         <p className="instructions">
-          로봇을 클릭하여 선택하고 화살표 키로 이동하세요
+          로봇을 클릭하여 선택하고 이동하세요
         </p>
       </div>
 
@@ -607,12 +619,12 @@ const RicochetRobotGame = () => {
         </div>
 
         <button onClick={resetGame} className="reset-button">
-          🔄 게임 리셋
+          🔄 로봇 리셋
         </button>
       </div>
 
       <div className="game-instructions">
-        <p>목표: 빨간 원에 로봇을 도달시키세요!</p>
+        <p>목표: 색깔 원에 해당 로봇을 도달시키세요!</p>
         <p>로봇은 벽이나 다른 로봇에 부딪힐 때까지 계속 이동합니다.</p>
       </div>
     </div>
