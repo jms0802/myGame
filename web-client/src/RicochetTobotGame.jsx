@@ -37,9 +37,51 @@ const createInitialBoard = () => {
   const wallCount = Math.floor(Math.random() * 10) + 10;
 
   for (let i = 0; i < wallCount; i++) {
-    const x = Math.floor(Math.random() * BOARD_SIZE); // 1 ~ BOARD_SIZE-2
-    const y = Math.floor(Math.random() * BOARD_SIZE); // 1 ~ BOARD_SIZE-2
-    const direction = Object.values(WALL_TYPES)[Math.floor(Math.random() * 4)];
+    const x = Math.floor(Math.random() * BOARD_SIZE);
+    const y = Math.floor(Math.random() * BOARD_SIZE);
+    
+    // 현재 셀의 벽 개수 확인
+    const currentWalls = board[y][x].walls.size;
+    if (currentWalls >= 3) continue; // 이미 3개의 벽이 있으면 건너뛰기
+
+    // 가능한 방향들 중에서 선택
+    const availableDirections = Object.values(WALL_TYPES).filter(direction => {
+      // 이미 해당 방향에 벽이 있는지 확인
+      if (board[y][x].walls.has(direction)) return false;
+
+      // 반대쪽 셀의 벽 개수 확인
+      let oppositeX = x;
+      let oppositeY = y;
+
+      switch (direction) {
+        case WALL_TYPES.RIGHT:
+          if (x + 1 >= BOARD_SIZE) return false;
+          oppositeX = x + 1;
+          break;
+        case WALL_TYPES.LEFT:
+          if (x - 1 < 0) return false;
+          oppositeX = x - 1;
+          break;
+        case WALL_TYPES.TOP:
+          if (y - 1 < 0) return false;
+          oppositeY = y - 1;
+          break;
+        case WALL_TYPES.BOTTOM:
+          if (y + 1 >= BOARD_SIZE) return false;
+          oppositeY = y + 1;
+          break;
+      }
+
+      // 반대쪽 셀의 벽 개수가 3개 이상이면 건너뛰기
+      if (board[oppositeY][oppositeX].walls.size >= 3) return false;
+
+      return true;
+    });
+
+    if (availableDirections.length === 0) continue;
+
+    // 가능한 방향 중에서 랜덤하게 선택
+    const direction = availableDirections[Math.floor(Math.random() * availableDirections.length)];
 
     // 벽 추가
     board[y][x].walls.add(direction);
@@ -47,16 +89,16 @@ const createInitialBoard = () => {
     // 반대쪽 셀에도 벽 추가
     switch (direction) {
       case WALL_TYPES.RIGHT:
-        if (x + 1 < BOARD_SIZE) board[y][x + 1].walls.add(WALL_TYPES.LEFT);
+        board[y][x + 1].walls.add(WALL_TYPES.LEFT);
         break;
       case WALL_TYPES.LEFT:
-        if (x - 1 >= 0) board[y][x - 1].walls.add(WALL_TYPES.RIGHT);
+        board[y][x - 1].walls.add(WALL_TYPES.RIGHT);
         break;
       case WALL_TYPES.TOP:
-        if (y - 1 >= 0) board[y - 1][x].walls.add(WALL_TYPES.BOTTOM);
+        board[y - 1][x].walls.add(WALL_TYPES.BOTTOM);
         break;
       case WALL_TYPES.BOTTOM:
-        if (y + 1 < BOARD_SIZE) board[y + 1][x].walls.add(WALL_TYPES.TOP);
+        board[y + 1][x].walls.add(WALL_TYPES.TOP);
         break;
     }
   }
@@ -104,13 +146,15 @@ const generateUniquePositions = () => {
     targetPosition = generateRandomPosition();
   } while (positions.has(`${targetPosition.x},${targetPosition.y}`));
 
-  const targetColor = Object.values(ROBOT_COLORS)[Math.floor(Math.random() * 4)];
+  const targetColor =
+    Object.values(ROBOT_COLORS)[Math.floor(Math.random() * 4)];
 
-  return { robots, target: {...targetPosition, color:targetColor} };
+  return { robots, target: { ...targetPosition, color: targetColor } };
 };
 
 const RicochetRobotGame = ({ dark }) => {
-  const { robots: initialRobots, target: initialTarget } = generateUniquePositions();
+  const { robots: initialRobots, target: initialTarget } =
+    generateUniquePositions();
 
   const [board] = useState(createInitialBoard);
   const [robots, setRobots] = useState(initialRobots);
@@ -123,76 +167,90 @@ const RicochetRobotGame = ({ dark }) => {
   const [clearMoveCount, setClearMoveCount] = useState(0);
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
-  const calculateHighlightedCells = useCallback((robot) => {
-    if (!robot) return [];
-    
-    const directions = ['up', 'down', 'left', 'right'];
-    const cells = new Set();
-    
-    directions.forEach(direction => {
-      let currentX = robot.x;
-      let currentY = robot.y;
-      let nextX = currentX;
-      let nextY = currentY;
-      
-      while (true) {
-        switch (direction) {
-          case 'up':
-            nextY = currentY - 1;
+  const calculateHighlightedCells = useCallback(
+    (robot) => {
+      if (!robot) return [];
+
+      const directions = ["up", "down", "left", "right"];
+      const cells = new Set();
+
+      directions.forEach((direction) => {
+        let currentX = robot.x;
+        let currentY = robot.y;
+        let nextX = currentX;
+        let nextY = currentY;
+
+        while (true) {
+          switch (direction) {
+            case "up":
+              nextY = currentY - 1;
+              break;
+            case "down":
+              nextY = currentY + 1;
+              break;
+            case "left":
+              nextX = currentX - 1;
+              break;
+            case "right":
+              nextX = currentX + 1;
+              break;
+          }
+
+          // 경계 체크
+          if (
+            nextX < 0 ||
+            nextX >= BOARD_SIZE ||
+            nextY < 0 ||
+            nextY >= BOARD_SIZE
+          ) {
             break;
-          case 'down':
-            nextY = currentY + 1;
-            break;
-          case 'left':
-            nextX = currentX - 1;
-            break;
-          case 'right':
-            nextX = currentX + 1;
-            break;
+          }
+
+          // 벽 체크
+          let blocked = false;
+          switch (direction) {
+            case "up":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.TOP))
+                blocked = true;
+              break;
+            case "down":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM))
+                blocked = true;
+              break;
+            case "left":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT))
+                blocked = true;
+              break;
+            case "right":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT))
+                blocked = true;
+              break;
+          }
+
+          if (blocked) break;
+
+          // 다른 로봇과 충돌 체크
+          const otherRobot = robots.find(
+            (r) => r.id !== robot.id && r.x === nextX && r.y === nextY
+          );
+          if (otherRobot) break;
+
+          // 이동 가능한 셀 추가
+          cells.add(`${nextX},${nextY}`);
+
+          // 다음 셀로 이동
+          currentX = nextX;
+          currentY = nextY;
         }
-        
-        // 경계 체크
-        if (nextX < 0 || nextX >= BOARD_SIZE || nextY < 0 || nextY >= BOARD_SIZE) {
-          break;
-        }
-        
-        // 벽 체크
-        let blocked = false;
-        switch (direction) {
-          case 'up':
-            if (board[currentY][currentX].walls.has(WALL_TYPES.TOP)) blocked = true;
-            break;
-          case 'down':
-            if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM)) blocked = true;
-            break;
-          case 'left':
-            if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT)) blocked = true;
-            break;
-          case 'right':
-            if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT)) blocked = true;
-            break;
-        }
-        
-        if (blocked) break;
-        
-        // 다른 로봇과 충돌 체크
-        const otherRobot = robots.find(r => r.id !== robot.id && r.x === nextX && r.y === nextY);
-        if (otherRobot) break;
-        
-        // 이동 가능한 셀 추가
-        cells.add(`${nextX},${nextY}`);
-        
-        // 다음 셀로 이동
-        currentX = nextX;
-        currentY = nextY;
-      }
-    });
-    
-    return Array.from(cells).map(pos => {
-      const [x, y] = pos.split(',').map(Number);
-      return { x, y };
-    });
-  }, [board, robots]);
+      });
+
+      return Array.from(cells).map((pos) => {
+        const [x, y] = pos.split(",").map(Number);
+        return { x, y };
+      });
+    },
+    [board, robots]
+  );
 
   // 로봇이 특정 방향으로 이동할 수 있는 최대 거리 계산
   const getMaxDistance = useCallback(
@@ -280,71 +338,86 @@ const RicochetRobotGame = ({ dark }) => {
         let currentX = robot.x;
         let currentY = robot.y;
         let targetReached = false;
-        
+
         while (true) {
           let nextX = currentX;
           let nextY = currentY;
-          
+
           switch (direction) {
-            case 'up':
+            case "up":
               nextY = currentY - 1;
               break;
-            case 'down':
+            case "down":
               nextY = currentY + 1;
               break;
-            case 'left':
+            case "left":
               nextX = currentX - 1;
               break;
-            case 'right':
+            case "right":
               nextX = currentX + 1;
               break;
           }
-          
+
           // 경계 체크
-          if (nextX < 0 || nextX >= BOARD_SIZE || nextY < 0 || nextY >= BOARD_SIZE) {
+          if (
+            nextX < 0 ||
+            nextX >= BOARD_SIZE ||
+            nextY < 0 ||
+            nextY >= BOARD_SIZE
+          ) {
             break;
           }
-          
+
           // 벽 체크
           let blocked = false;
           switch (direction) {
-            case 'up':
-              if (board[currentY][currentX].walls.has(WALL_TYPES.TOP)) blocked = true;
+            case "up":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.TOP))
+                blocked = true;
               break;
-            case 'down':
-              if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM)) blocked = true;
+            case "down":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM))
+                blocked = true;
               break;
-            case 'left':
-              if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT)) blocked = true;
+            case "left":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT))
+                blocked = true;
               break;
-            case 'right':
-              if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT)) blocked = true;
+            case "right":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT))
+                blocked = true;
               break;
           }
-          
+
           if (blocked) break;
-          
+
           // 다른 로봇과 충돌 체크
-            const otherRobot = robots.find(r => r.id !== robotId && r.x === nextX && r.y === nextY);
+          const otherRobot = robots.find(
+            (r) => r.id !== robotId && r.x === nextX && r.y === nextY
+          );
           if (otherRobot) break;
-          
-            // 타겟 체크
-            if (nextX === target.x && nextY === target.y && robot.color === target.color) {
-              targetReached = true;
+
+          // 타겟 체크
+          if (
+            nextX === target.x &&
+            nextY === target.y &&
+            robot.color === target.color
+          ) {
+            targetReached = true;
             break;
           }
-          
+
           currentX = nextX;
           currentY = nextY;
         }
-        
+
         // 타겟에 도달했다면
         if (targetReached) {
-          setClearMoveCount(moveCount+1);  // 현재 무브 카운트 저장
-          setMoveCount(0);  // 무브 카운트 즉시 초기화
+          setClearMoveCount(moveCount + 1); // 현재 무브 카운트 저장
+          setMoveCount(0); // 무브 카운트 즉시 초기화
           setShowClearMessage(true);
           setSelectedRobot(null);
-          
+
           setTimeout(() => {
             setShowClearMessage(false);
           }, 1500);
@@ -358,17 +431,20 @@ const RicochetRobotGame = ({ dark }) => {
             newTargetPosition = generateRandomPosition();
             attempts++;
             // 로봇 위치와 겹치지 않는지 확인
-            const isOverlapping = robots.some(r => r.x === newTargetPosition.x && r.y === newTargetPosition.y);
+            const isOverlapping = robots.some(
+              (r) => r.x === newTargetPosition.x && r.y === newTargetPosition.y
+            );
             if (!isOverlapping || attempts >= maxAttempts) break;
           } while (attempts < maxAttempts);
 
           // 랜덤 색상 선택
-          const newTargetColor = Object.values(ROBOT_COLORS)[Math.floor(Math.random() * 4)];
-          
+          const newTargetColor =
+            Object.values(ROBOT_COLORS)[Math.floor(Math.random() * 4)];
+
           setTarget({
             x: newTargetPosition.x,
             y: newTargetPosition.y,
-            color: newTargetColor
+            color: newTargetColor,
           });
 
           // 로봇을 타겟 위치에 멈추게 함
@@ -378,7 +454,7 @@ const RicochetRobotGame = ({ dark }) => {
             );
             setPrevRobots(newRobots);
             return newRobots;
-        });
+          });
           return; // 여기서 함수 종료
         }
 
@@ -388,13 +464,20 @@ const RicochetRobotGame = ({ dark }) => {
             r.id === robotId ? { ...r, x: newPosition.x, y: newPosition.y } : r
           );
           // 이동 후 새로운 위치에서의 하이라이트 계산
-          const movedRobot = newRobots.find(r => r.id === robotId);
+          const movedRobot = newRobots.find((r) => r.id === robotId);
           setHighlightedCells(calculateHighlightedCells(movedRobot));
           return newRobots;
         });
       }
     },
-    [getMaxDistance, robots, target, board, calculateHighlightedCells]
+    [
+      getMaxDistance,
+      robots,
+      target,
+      board,
+      calculateHighlightedCells,
+      moveCount,
+    ]
   );
 
   // 게임 리셋
@@ -406,118 +489,172 @@ const RicochetRobotGame = ({ dark }) => {
   }, [prevRobots]);
 
   // 로봇 선택 시 하이라이트 계산
-  const handleRobotSelect = useCallback((robotId) => {
-    // 이미 선택된 로봇을 다시 클릭하면 선택 해제
-    if (selectedRobot === robotId) {
-      setSelectedRobot(null);
-      setHighlightedCells([]); // 하이라이트 제거
-      return;
-    }
+  const handleRobotSelect = useCallback(
+    (robotId) => {
+      // 이미 선택된 로봇을 다시 클릭하면 선택 해제
+      if (selectedRobot === robotId) {
+        setSelectedRobot(null);
+        setHighlightedCells([]); // 하이라이트 제거
+        return;
+      }
 
-    setSelectedRobot(robotId);
-    const robot = robots.find(r => r.id === robotId);
-    setHighlightedCells(calculateHighlightedCells(robot));
-  }, [robots, calculateHighlightedCells, selectedRobot]);
+      setSelectedRobot(robotId);
+      const robot = robots.find((r) => r.id === robotId);
+      setHighlightedCells(calculateHighlightedCells(robot));
+    },
+    [robots, calculateHighlightedCells, selectedRobot]
+  );
 
   // 셀 클릭으로 로봇 이동
-  const handleCellClick = useCallback((x, y) => {
-    if (!selectedRobot || !highlightedCells.some(cell => cell.x === x && cell.y === y)) return;
-    
-    const robot = robots.find(r => r.id === selectedRobot);
-    if (!robot) return;
+  const handleCellClick = useCallback(
+    (x, y) => {
+      if (
+        !selectedRobot ||
+        !highlightedCells.some((cell) => cell.x === x && cell.y === y)
+      )
+        return;
 
-    // 클릭한 셀이 속한 방향 찾기
-    const directions = ['up', 'down', 'left', 'right'];
-    let targetDirection = null;
+      const robot = robots.find((r) => r.id === selectedRobot);
+      if (!robot) return;
 
-    // 클릭한 셀이 속한 방향 찾기
-    for (const direction of directions) {
-      let currentX = robot.x;
-      let currentY = robot.y;
-      
-      while (true) {
-        let nextX = currentX;
-        let nextY = currentY;
-        
-        switch (direction) {
-          case 'up':
-            nextY = currentY - 1;
+      // 클릭한 셀이 속한 방향 찾기
+      const directions = ["up", "down", "left", "right"];
+      let targetDirection = null;
+
+      // 클릭한 셀이 속한 방향 찾기
+      for (const direction of directions) {
+        let currentX = robot.x;
+        let currentY = robot.y;
+
+        while (true) {
+          let nextX = currentX;
+          let nextY = currentY;
+
+          switch (direction) {
+            case "up":
+              nextY = currentY - 1;
+              break;
+            case "down":
+              nextY = currentY + 1;
+              break;
+            case "left":
+              nextX = currentX - 1;
+              break;
+            case "right":
+              nextX = currentX + 1;
+              break;
+          }
+
+          // 경계 체크
+          if (
+            nextX < 0 ||
+            nextX >= BOARD_SIZE ||
+            nextY < 0 ||
+            nextY >= BOARD_SIZE
+          ) {
             break;
-          case 'down':
-            nextY = currentY + 1;
+          }
+
+          // 벽 체크
+          let blocked = false;
+          switch (direction) {
+            case "up":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.TOP))
+                blocked = true;
+              break;
+            case "down":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM))
+                blocked = true;
+              break;
+            case "left":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT))
+                blocked = true;
+              break;
+            case "right":
+              if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT))
+                blocked = true;
+              break;
+          }
+
+          if (blocked) break;
+
+          // 다른 로봇과 충돌 체크
+          const otherRobot = robots.find(
+            (r) => r.id !== robot.id && r.x === nextX && r.y === nextY
+          );
+          if (otherRobot) break;
+
+          // 클릭한 셀을 찾았으면 해당 방향으로 이동
+          if (nextX === x && nextY === y) {
+            targetDirection = direction;
             break;
-          case 'left':
-            nextX = currentX - 1;
-            break;
-          case 'right':
-            nextX = currentX + 1;
-            break;
+          }
+
+          currentX = nextX;
+          currentY = nextY;
         }
-        
-        // 경계 체크
-        if (nextX < 0 || nextX >= BOARD_SIZE || nextY < 0 || nextY >= BOARD_SIZE) {
-          break;
-        }
-        
-        // 벽 체크
-        let blocked = false;
-        switch (direction) {
-          case 'up':
-            if (board[currentY][currentX].walls.has(WALL_TYPES.TOP)) blocked = true;
-            break;
-          case 'down':
-            if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM)) blocked = true;
-            break;
-          case 'left':
-            if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT)) blocked = true;
-            break;
-          case 'right':
-            if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT)) blocked = true;
-            break;
-        }
-        
-        if (blocked) break;
-        
-        // 다른 로봇과 충돌 체크
-        const otherRobot = robots.find(r => r.id !== robot.id && r.x === nextX && r.y === nextY);
-        if (otherRobot) break;
-        
-        // 클릭한 셀을 찾았으면 해당 방향으로 이동
-        if (nextX === x && nextY === y) {
-          targetDirection = direction;
-          break;
-        }
-        
-        currentX = nextX;
-        currentY = nextY;
+
+        if (targetDirection) break;
       }
-      
-      if (targetDirection) break;
-    }
 
-    if (targetDirection) {
-      moveRobot(selectedRobot, targetDirection);
-      setHighlightedCells([]); // 이동 후 하이라이트 제거
-    }
-  }, [selectedRobot, highlightedCells, robots, moveRobot, board]);
+      if (targetDirection) {
+        moveRobot(selectedRobot, targetDirection);
+        setHighlightedCells([]); // 이동 후 하이라이트 제거
+      }
+    },
+    [selectedRobot, highlightedCells, robots, moveRobot, board]
+  );
 
   // 셀 렌더링 수정
   const renderCell = (x, y) => {
     const cell = board[y][x];
-    const robot = robots.find(r => r.x === x && r.y === y);
+    const robot = robots.find((r) => r.x === x && r.y === y);
     const isTarget = target.x === x && target.y === y;
-    const isHighlighted = highlightedCells.some(cell => cell.x === x && cell.y === y);
-    
+    const isHighlighted = highlightedCells.some(
+      (cell) => cell.x === x && cell.y === y
+    );
+
     const wallStyles = {
-      borderTopWidth: cell.walls.has(WALL_TYPES.TOP) ? '4px' : '1px',
-      borderRightWidth: cell.walls.has(WALL_TYPES.RIGHT) ? '4px' : '1px',
-      borderBottomWidth: cell.walls.has(WALL_TYPES.BOTTOM) ? '4px' : '1px',
-      borderLeftWidth: cell.walls.has(WALL_TYPES.LEFT) ? '4px' : '1px',
-      borderColor: dark ? '#dedede' : 'dimgray',
-      backgroundColor: isHighlighted 
-        ? (dark ? 'rgba(144, 238, 144, 0.2)' : 'rgba(144, 238, 144, 0.3)')
-        : (dark ? '#434343' : 'white'),
-      cursor: (robot || isHighlighted) ? 'pointer' : 'default'
+      borderTopWidth: cell.walls.has(WALL_TYPES.TOP) ? "4px" : "1px",
+      borderRightWidth: cell.walls.has(WALL_TYPES.RIGHT) ? "4px" : "1px",
+      borderBottomWidth: cell.walls.has(WALL_TYPES.BOTTOM) ? "4px" : "1px",
+      borderLeftWidth: cell.walls.has(WALL_TYPES.LEFT) ? "4px" : "1px",
+      borderTopColor: cell.walls.has(WALL_TYPES.TOP)
+        ? dark
+          ? "#dedede"
+          : "dimgray"
+        : dark
+        ? "#7d7d7d"
+        : "#d3d3d3",
+      borderRightColor: cell.walls.has(WALL_TYPES.RIGHT)
+        ? dark
+          ? "#dedede"
+          : "dimgray"
+        : dark
+        ? "#7d7d7d"
+        : "#d3d3d3",
+      borderBottomColor: cell.walls.has(WALL_TYPES.BOTTOM)
+        ? dark
+          ? "#dedede"
+          : "dimgray"
+        : dark
+        ? "#7d7d7d"
+        : "#d3d3d3",
+      borderLeftColor: cell.walls.has(WALL_TYPES.LEFT)
+        ? dark
+          ? "#dedede"
+          : "dimgray"
+        : dark
+        ? "#7d7d7d"
+        : "#d3d3d3",
+      backgroundColor: isHighlighted
+        ? dark
+          ? "rgb(140 246 140 / 45%)"
+          : "rgba(144, 238, 144, 0.3)"
+        : dark
+        ? "#434343"
+        : "white",
+      cursor: robot || isHighlighted ? "pointer" : "default",
     };
 
     return (
@@ -534,20 +671,20 @@ const RicochetRobotGame = ({ dark }) => {
         }}
       >
         {isTarget && (
-          <div 
-            className="target" 
-            style={{ 
+          <div
+            className="target"
+            style={{
               backgroundColor: target.color,
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              border: '2px solid white'
-            }} 
+              width: "20px",
+              height: "20px",
+              borderRadius: "50%",
+              border: dark ? "2px solid #434343" : "2px solid white",
+            }}
           />
         )}
         {robot && (
           <div
-            className={`robot ${selectedRobot === robot.id ? 'selected' : ''}`}
+            className={`robot ${selectedRobot === robot.id ? "selected" : ""}`}
             style={{ backgroundColor: robot.color }}
           >
             {robot.id[0].toUpperCase()}
@@ -559,14 +696,15 @@ const RicochetRobotGame = ({ dark }) => {
 
   return (
     <div className="game-container">
-      {console.log(dark)}
       <h1 className="game-title">리코셰 로봇</h1>
 
       {/* 클리어 메시지 */}
       {showClearMessage && (
         <div className="clear-message">
           <h2>클리어!</h2>
-          <p>이동 횟수: <span className="count">{clearMoveCount}</span></p>
+          <p>
+            이동 횟수: <span className="count">{clearMoveCount}</span>
+          </p>
         </div>
       )}
 
@@ -589,12 +727,15 @@ const RicochetRobotGame = ({ dark }) => {
         <p className="move-count">
           이동 횟수: <span className="count">{moveCount}</span>
         </p>
-        <p className="instructions">
-          로봇을 클릭하여 선택하고 이동하세요
-        </p>
+        <p className="instructions">로봇을 클릭하여 선택하고 이동하세요</p>
       </div>
 
-      <div className="game-board">
+      <div
+        className="game-board"
+        style={{
+          gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
+        }}
+      >
         {Array(BOARD_SIZE)
           .fill(null)
           .map((_, y) =>
@@ -606,10 +747,12 @@ const RicochetRobotGame = ({ dark }) => {
 
       <div className="controls">
         <div className="robot-buttons">
-          {robots.map(robot => (
+          {robots.map((robot) => (
             <button
               key={robot.id}
-              className={`robot-button ${selectedRobot === robot.id ? 'active' : ''}`}
+              className={`robot-button ${
+                selectedRobot === robot.id ? "active" : ""
+              }`}
               style={{ backgroundColor: robot.color }}
               onClick={() => handleRobotSelect(robot.id)}
             >
