@@ -3,8 +3,11 @@ import React, { useEffect, useState } from "react";
 import RicochetRobotGame from './RicochetTobotGame.jsx'
 import "./App.css";
 import "./index.css";
+import useGuestUID from "./hooks/useGuestUID.js";
 
 function App() {
+  const { uid, nickname } = useGuestUID();
+
   const [dark, setDark] = useState(() => {
     // 초기 테마 설정을 localStorage에서 가져옴
     return localStorage.getItem("color-theme") === "dark";
@@ -16,6 +19,10 @@ function App() {
     document.documentElement.setAttribute("color-theme", dark ? "dark" : "light");
     localStorage.setItem("color-theme", dark ? "dark" : "light");
   }, [dark]);
+  
+  if (!uid) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>

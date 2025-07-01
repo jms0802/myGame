@@ -1,7 +1,7 @@
 <div class="container">
     <h1>환영합니다, <%= user.nickname %>님!</h1>
     <div class="info">
-        <p><span class="label">아이디:</span> <%= user.username %></p>
+        <p><span class="label">아이디:</span> <%= user.uid %></p>
         <% if (user.email) { %>
             <p><span class="label">이메일:</span> <%= user.email %></p>
         <% } %>

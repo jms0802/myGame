@@ -24,8 +24,8 @@ exports.getLoginPage = (req, res) => {
 
 // 로그인 처리
 exports.login = asyncHandler(async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username });
+  const { uid, password } = req.body;
+  const user = await User.findOne({ uid });
   if (!user) {
     return res.json({
       success: false,
@@ -106,7 +106,7 @@ exports.getRegisterPage = (req, res) => {
 
 // 회원가입 처리
 exports.register = asyncHandler(async (req, res) => {
-  const { username, nickname, email, password } = req.body;
+  const { uid, nickname, email, password } = req.body;
   const tempGoogleData = req.cookies.temp_google_data;
 
   const existingUser = await User.findOne({ email });
@@ -122,7 +122,7 @@ exports.register = asyncHandler(async (req, res) => {
   const userData = {
     email,
     password: hashedPassword,
-    username,
+    uid,
     nickname,
   };
 
@@ -141,8 +141,8 @@ exports.register = asyncHandler(async (req, res) => {
 
 // 아이디 중복 체크
 exports.checkUsername = asyncHandler(async (req, res) => {
-  const { username } = req.body;
-  const user = await User.findOne({ username });
+  const { uid } = req.body;
+  const user = await User.findOne({ uid });
 
   res.json({
     exists: !!user,
