@@ -52,7 +52,7 @@ function App() {
           </svg>
         </div>
       </button>
-      <RicochetRobotGame dark={dark} />
+      <RicochetRobotGame dark={dark} nickname={nickname} />
     </>
   );
 }
