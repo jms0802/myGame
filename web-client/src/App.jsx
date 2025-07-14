@@ -5,6 +5,7 @@ import "./App.css";
 import "./index.css";
 import useGuestUID from "./hooks/useGuestUID.js";
 import UserInfoButton from "./components/UserInfoButton.jsx";
+import SideBarMenu from "./components/SideBarMenu.jsx";
 
 function App() {
   const { uid, nickname, refreshUser } = useGuestUID();
@@ -69,6 +70,7 @@ function App() {
         user={{ uid, nickname }}
         onUserUpdate={handleUserUpdate}
       />
+      <SideBarMenu />
     </>
   );
 }
