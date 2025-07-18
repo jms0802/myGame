@@ -31,8 +31,7 @@
 |  | email | String |
 |  | googleId | String |
 |  | nickname | String |
-|  | createdAt | Date
-default: Date.now |
+|  | createdAt | Date, default: Date.now |
 | GameRecord | _id | ObjectId |
 |  | userUid | String, required: true |
 |  | score | Int |
