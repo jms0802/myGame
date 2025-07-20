@@ -27,10 +27,12 @@ app.use(cookieParser());
 // 라우트 설정
 // const authRouter = require('./routes/authRouter');
 const userRouter = require('./routes/userRouter');
+const gameRecordRouter = require('./routes/gameRecordRouter');
 // const rankRouter = require('./routes/rankRouter');
 
 //app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
+app.use('/api', gameRecordRouter);
 //app.use('/api/rank', rankRouter);
 
 const server = app.listen(port, () => {
