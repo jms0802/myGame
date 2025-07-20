@@ -22,12 +22,16 @@ app.use(passport.initialize());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(cookieParser());
 
 // 라우트 설정
-app.use('/', require('./routes/index'));
-app.use('/auth', require('./routes/auth'));
+// const authRouter = require('./routes/authRouter');
+const userRouter = require('./routes/userRouter');
+// const rankRouter = require('./routes/rankRouter');
+
+//app.use('/api/auth', authRouter);
+app.use('/api/user', userRouter);
+//app.use('/api/rank', rankRouter);
 
 const server = app.listen(port, () => {
     console.log(`App Listening on port ${port}`);
