@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import "./RicochetRobotGame.css";
+import { useDarkMode } from "./contexts/DarkModeContext";
 
 const BOARD_SIZE = 10;
 const WALL_TYPES = {
@@ -13,7 +14,7 @@ const ROBOT_COLORS = {
   RED: "#ff4444",
   BLUE: "#4444ff",
   GREEN: "#44ff44",
-  YELLOW: "#ffff44",
+  YELLOW: "#F4C430",
 };
 
 // 게임판 초기 설정
@@ -152,7 +153,7 @@ const generateUniquePositions = () => {
   return { robots, target: { ...targetPosition, color: targetColor } };
 };
 
-const RicochetRobotGame = ({ dark }) => {
+const RicochetRobotGame = ( ) => {
   const { robots: initialRobots, target: initialTarget } =
     generateUniquePositions();
 
@@ -165,6 +166,7 @@ const RicochetRobotGame = ({ dark }) => {
   const [highlightedCells, setHighlightedCells] = useState([]);
   const [showClearMessage, setShowClearMessage] = useState(false);
   const [clearMoveCount, setClearMoveCount] = useState(0);
+  const { dark } = useDarkMode();
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
   const calculateHighlightedCells = useCallback(
@@ -675,8 +677,6 @@ const RicochetRobotGame = ({ dark }) => {
             className="target"
             style={{
               backgroundColor: target.color,
-              width: "20px",
-              height: "20px",
               borderRadius: "50%",
               border: dark ? "2px solid #434343" : "2px solid white",
             }}

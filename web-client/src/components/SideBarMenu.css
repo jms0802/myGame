@@ -1,7 +1,7 @@
 .sidebar-toggle {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 18px;
+    right: 18px;
     z-index: 120;
     padding: 8px 16px;
     border: none;
@@ -10,7 +10,7 @@
     font-size: 18px;
     font-weight: 500;
     background-color: var(--btn-default);
-    color: var(--main-color);
+    color: white;
     transition: all 0.3s ease;
 }
 .sidebar-toggle:hover {
