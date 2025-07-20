@@ -9,13 +9,13 @@
 
 ### 1. 📌 기능 명세
 
-| 기능 | 설명 | 우선순위 | 완료 |
-| --- | --- | --- | --- |
-| 게임 플레이 | 리액트로 구현된 퍼즐 UI | 높음 | ✔ |
-| 프로필 조회 |  | 높음 | ❌ |
-| 게임 결과 저장 | 유저 ID와 점수, 시간 기록 | 중간 | ❌ |
-| 랭킹 조회 | 최근 점수 기준 정렬 | 중간 | ❌ |
-| Google OAuth 통합 | 이메일 기준 계정 통합 | 중간 | ❌ |
+| 기능 | 설명 | 우선순위 |
+| --- | --- | --- |
+| 게임 플레이 | 리액트로 구현된 퍼즐 UI | 높음 |
+| 프로필 조회 |  | 높음 |
+| 게임 결과 저장 | 유저 ID와 점수, 시간 기록 | 중간 |
+| 랭킹 조회 | 최근 점수 기준 정렬 | 중간 |
+| Google OAuth 통합 | 이메일 기준 계정 통합 | 중간 |
 
 ---
 
@@ -33,18 +33,18 @@
 |  | nickname | String |
 |  | createdAt | Date, default: Date.now |
 | GameRecord | _id | ObjectId |
-|  | userUid | String, required: true |
+|  | uid | String, required: true |
 |  | score | Int |
 |  | playDate | Date |
 |  | isPublic | boolean |
 |  | stageData | Object (JSON 키-값) |
 | Rank | _id | ObjectId |
-|  | userUid | String, required: true, unique: true |
+|  | uid | String, required: true, unique: true |
 |  | nickname | String |
 |  | playCount | Int |
 |  | updatedAt | Date |
 | UserRecord | _id | ObjectId |
-|  | userUid | String, required: true, unique: true |
+|  | uid | String, required: true, unique: true |
 |  | gameCount | Int |
 |  | avgScore | Int |
 |  | maxScore | Int |
@@ -54,13 +54,14 @@
 
 ### 3. 🔗 API 설계
 
-| 메서드 | 경로 | 설명 | 요청 데이터 | 응답 데이터 |
-| --- | --- | --- | --- | --- |
-| GET | /api/auth/google | Google 로그인 요청 |  |  |
-| POST | /api/game-record | 게임 결과 저장 | stage, score, playDate |  |
-| GET | /api/game-records | 게임 기록 조회 |  | stage, score. playDate |
-| GET | /api/rank | 랭킹 조회 |  | uid, nickname, playCount |
-| POST | /api/user/me | 프로필 조회 |  | uid, email, nickname, googleid, createdAt, etc |
+| 메서드 | 경로 | 설명 | 요청 데이터 | 응답 데이터 | 완료 |
+| --- | --- | --- | --- | --- | --- |
+| POST | /api/user/init | 사용자 등록 | uid, nickname |  | ✔️ |
+| GET | /api/user/profile?uid= | 프로필 조회 | uid | user{uid, email, nickname, googleid, createdAt} | ✔️ |
+| POST | /api/game-record | 게임 결과 저장 | uid, score, playDate, isPublic, stageData |  | ✔️ |
+| POST | /api/game-records?uid= | 게임 기록 조회 | uid | uid, score, playDate, isPublic, stageData | ✔️ |
+| GET | /api/rank | 랭킹 조회 |  | uid, nickname, playCount | ❌ |
+| GET | /api/auth/google | Google 로그인 요청 |  |  | ❌ |
 
 ---
 
