@@ -152,7 +152,7 @@ const generateUniquePositions = () => {
   return { robots, target: { ...targetPosition, color: targetColor } };
 };
 
-const RicochetRobotGame = ({ dark, nickname }) => {
+const RicochetRobotGame = ({ dark }) => {
   const { robots: initialRobots, target: initialTarget } =
     generateUniquePositions();
 
@@ -724,9 +724,6 @@ const RicochetRobotGame = ({ dark, nickname }) => {
             "없음"
           )}
         </p> */}
-        <p className="nickname">
-          {nickname}
-        </p>
         <p className="move-count">
           이동 횟수: <span className="count">{moveCount}</span>
         </p>
