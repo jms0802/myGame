@@ -21,6 +21,24 @@ exports.saveGameRecord = asyncHandler(async (req, res) => {
   });
 
   await record.save();
+
+  // [rank] 게임 기록 저장 시 랭크 갱신
+  let rank = await require("../models/Rank").findOne({ uid });
+  if (rank) {
+    rank.playCount += 1;
+    rank.updatedAt = new Date();
+    await rank.save();
+  } else {
+    const user = await User.findOne({ uid });
+    if (user) {
+      await require("../models/Rank").create({
+        uid,
+        nickname: user.nickname,
+        playCount: 1,
+        updatedAt: new Date(),
+      });
+    }
+  }
   res.status(201).json({ message: "게임 기록 저장 완료", record });
 });
 

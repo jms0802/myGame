@@ -28,12 +28,12 @@ app.use(cookieParser());
 // const authRouter = require('./routes/authRouter');
 const userRouter = require('./routes/userRouter');
 const gameRecordRouter = require('./routes/gameRecordRouter');
-// const rankRouter = require('./routes/rankRouter');
+const rankRouter = require('./routes/rankRouter');
 
 //app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
-app.use('/api', gameRecordRouter);
-//app.use('/api/rank', rankRouter);
+app.use('/api/game-record', gameRecordRouter);
+app.use('/api/rank', rankRouter);
 
 const server = app.listen(port, () => {
     console.log(`App Listening on port ${port}`);
