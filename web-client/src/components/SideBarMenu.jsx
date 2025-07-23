@@ -3,12 +3,16 @@ import React, { useState } from "react";
 import { useDarkMode } from "../contexts/DarkModeContext";
 import { Link } from "react-router-dom";
 import "./SideBarMenu.css";
+import { useGuestUID, createGuestUser} from "../hooks/useGuestUID";
+import LoginModal from "./LoginModal";
 
-function SideBarMenu({ user }) {
+function SideBarMenu() {
+  const { user, refreshUser } = useGuestUID();
   const [isOpen, setIsOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const { dark, setDark } = useDarkMode();
+  const [loginOpen, setLoginOpen] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -38,10 +42,7 @@ function SideBarMenu({ user }) {
 
       {/* 오버레이 */}
       {isOpen && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />
       )}
 
       {/* 사이드바 */}
@@ -53,23 +54,34 @@ function SideBarMenu({ user }) {
             alt="프로필"
           />
           <div className="sidebar-profile-info">
-            <div className="sidebar-profile-name">{user.nickname}</div>
-            <div
-              className="sidebar-profile-uid"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                navigator.clipboard.writeText(user.uid);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1200);
-              }}
-              aria-label="UID 복사"
-              title="클릭하면 UID가 복사됩니다"
-            >
-              UID: <span className="sidebar-profile-uid-value">{user.uid}</span>
-              {copied && (
-                <span className="sidebar-profile-uid-copied">복사됨!</span>
-              )}
-            </div>
+            {user.uid ? (
+              <>
+                <div className="sidebar-profile-name">{user.nickname}</div>
+                <div
+                  className="sidebar-profile-uid"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(user.uid);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1200);
+                  }}
+                  aria-label="UID 복사"
+                  title="클릭하면 UID가 복사됩니다"
+                >
+                  UID: <span className="sidebar-profile-uid-value">{user.uid}</span>
+                  {copied && (
+                    <span className="sidebar-profile-uid-copied">복사됨!</span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <button
+                className="w-full py-2 mt-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                onClick={() => setLoginOpen(true)}
+              >
+                로그인
+              </button>
+            )}
           </div>
           <button
             className="sidebar-close"
@@ -102,11 +114,11 @@ function SideBarMenu({ user }) {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="24px"
-                viewBox="0 -960 960-960"
+                viewBox="0 -960 960 960"
                 width="24px"
-                fill="#222222"
+                fill="currentColor"
               >
-                <path d="M480-280q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Z" />
+                <path d="M480-280q-83 0-141.5-58.5T280-480q0-83 58.5-141.5T480-680q83 0 141.5 58.5T680-480q0 83-58.5 141.5T480-280ZM200-440H40v-80h160v80Zm720 0H760v-80h160v80ZM440-760v-160h80v160h-80Zm0 720v-160h80v160h-80ZM256-650l-101-97 57-59 96 100-52 56Zm492 496-97-101 53-55 101 97-57 59Zm-98-550 97-101 59 57-100 96-56-52ZM154-212l101-97 55 53-97 101-59-57Z"></path>
               </svg>
             </div>
           )}
@@ -123,26 +135,51 @@ function SideBarMenu({ user }) {
             </button>
             {gameOpen && (
               <ul className="sidebar-submenu">
-                <Link to="/" className="sidebar-menu-link no-underline" onClick={() => setIsOpen(false)}>
+                <Link
+                  to="/"
+                  className="sidebar-menu-link no-underline"
+                  onClick={() => setIsOpen(false)}
+                >
                   <li>기본 모드</li>
                 </Link>
               </ul>
             )}
           </li>
           <li>
-            <Link to="/rank" className="sidebar-menu-link no-underline" onClick={() => setIsOpen(false)}>
+            <Link
+              to="/rank"
+              className="sidebar-menu-link no-underline"
+              onClick={() => setIsOpen(false)}
+            >
               <span className="sidebar-menu-icon">🏆</span>
               <span>랭킹</span>
             </Link>
           </li>
           <li>
-            <Link to="/profile" className="sidebar-menu-link no-underline" onClick={() => setIsOpen(false)}>
+            <Link
+              to="/profile"
+              className="sidebar-menu-link no-underline"
+              onClick={() => setIsOpen(false)}
+            >
               <span className="sidebar-menu-icon">👤</span>
               <span>내 정보</span>
             </Link>
           </li>
         </ul>
       </nav>
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onGuestLogin={() => {
+          createGuestUser();
+          refreshUser();
+          setLoginOpen(false);
+        }}
+        onGoogleLogin={() => {
+          // 구글 로그인 로직
+          setLoginOpen(false);
+        }}
+      />
     </>
   );
 }

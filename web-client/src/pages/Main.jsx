@@ -1,20 +1,10 @@
 import React from "react";
-import RicochetRobotGame from "../components/Game/RicochetRobotGame.jsx";
-import UserInfoButton from "../components/UserInfoButton.jsx";
+import RicochetRobotGame from "../components/Game/RicochetRobotGame.jsx"; 
 
-export default function Main({ user }) {
-  const { uid, nickname, refreshUser } = user;
-
-  if (!uid) return <div>Loading...</div>;
-
-  const handleUserUpdate = () => {
-    if (refreshUser) refreshUser();
-  };
-
+export default function Main() {
   return (
     <>
       <RicochetRobotGame />
-      <UserInfoButton user={{ uid, nickname }} onUserUpdate={handleUserUpdate} />
     </>
   );
 }

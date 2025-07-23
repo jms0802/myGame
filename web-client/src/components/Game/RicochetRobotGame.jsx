@@ -695,7 +695,7 @@ const RicochetRobotGame = ( ) => {
   };
 
   return (
-    <div className="game-container bg-gray-50">
+    <div className="game-container bg-gray-50 w-fit mx-auto">
       <h1 className="game-title">리코셰 로봇</h1>
 
       {/* 클리어 메시지 */}
