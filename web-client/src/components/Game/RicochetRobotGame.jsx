@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import "./RicochetRobotGame.css";
-import { useDarkMode } from "./contexts/DarkModeContext";
+import { useDarkMode } from "../../contexts/DarkModeContext";
 
 const BOARD_SIZE = 10;
 const WALL_TYPES = {
@@ -695,7 +695,7 @@ const RicochetRobotGame = ( ) => {
   };
 
   return (
-    <div className="game-container">
+    <div className="game-container bg-gray-50">
       <h1 className="game-title">리코셰 로봇</h1>
 
       {/* 클리어 메시지 */}
@@ -727,7 +727,6 @@ const RicochetRobotGame = ( ) => {
         <p className="move-count">
           이동 횟수: <span className="count">{moveCount}</span>
         </p>
-        <p className="instructions">로봇을 클릭하여 선택하고 이동하세요</p>
       </div>
 
       <div

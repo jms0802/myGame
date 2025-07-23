@@ -34,3 +34,11 @@
   --instructions-color: #b0b0b0;
   --count-color: #60a5fa;
 }
+
+/* 
+  아래 글로벌 스타일은 Tailwind className으로 대체하므로 삭제/주석 처리
+  (필요시 Tailwind에서 직접 className으로 적용)
+*/
+/*
+body, h1, button, a, ... 
+*/

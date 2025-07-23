@@ -1,7 +1,8 @@
 // SidebarMenu.jsx
 import React, { useState } from "react";
-import "./SideBarMenu.css";
 import { useDarkMode } from "../contexts/DarkModeContext";
+import { Link } from "react-router-dom";
+import "./SideBarMenu.css";
 
 function SideBarMenu({ user }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,7 +10,6 @@ function SideBarMenu({ user }) {
   const [copied, setCopied] = useState(false);
   const { dark, setDark } = useDarkMode();
 
-  // body 스크롤 방지 (메뉴 열릴 때)
   React.useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -21,24 +21,30 @@ function SideBarMenu({ user }) {
     };
   }, [isOpen]);
 
-  // 다크모드 토글
   const handleDarkToggle = () => {
     setDark((prev) => !prev);
   };
 
   return (
-    <div>
+    <>
       {/* 햄버거 버튼 */}
-      <button className="sidebar-toggle" onClick={() => setIsOpen(!isOpen)}>
+      <button
+        className="fixed top-4 right-4 z-50 p-2 bg-white rounded shadow-md text-2xl focus:outline-none sidebar-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="사이드바 열기"
+      >
         ☰
       </button>
 
       {/* 오버레이 */}
       {isOpen && (
-        <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />
+        <div
+          className="sidebar-overlay"
+          onClick={() => setIsOpen(false)}
+        />
       )}
 
-      {/* 사이드 메뉴 */}
+      {/* 사이드바 */}
       <nav className={`sidebar${isOpen ? " open" : ""}`}>
         <div className="sidebar-header">
           <img
@@ -65,7 +71,11 @@ function SideBarMenu({ user }) {
               )}
             </div>
           </div>
-          <button className="sidebar-close" onClick={() => setIsOpen(false)}>
+          <button
+            className="sidebar-close"
+            onClick={() => setIsOpen(false)}
+            aria-label="사이드바 닫기"
+          >
             &times;
           </button>
         </div>
@@ -77,22 +87,22 @@ function SideBarMenu({ user }) {
         >
           {dark ? (
             <div className="icon30 moon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="24px"
-              viewBox="0 -960 960 960"
-              width="24px"
-              fill="#FFFFFF"
-            >
-              <path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Z" />
-            </svg>
-          </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px"
+                fill="#FFFFFF"
+              >
+                <path d="M480-120q-150 0-255-105T120-480q0-150 105-255t255-105q14 0 27.5 1t26.5 3q-41 29-65.5 75.5T444-660q0 90 63 153t153 63q55 0 101-24.5t75-65.5q2 13 3 26.5t1 27.5q0 150-105 255T480-120Z" />
+              </svg>
+            </div>
           ) : (
             <div className="icon30 sun">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="24px"
-                viewBox="0 -960 960 960"
+                viewBox="0 -960 960-960"
                 width="24px"
                 fill="#222222"
               >
@@ -113,22 +123,27 @@ function SideBarMenu({ user }) {
             </button>
             {gameOpen && (
               <ul className="sidebar-submenu">
-                <li>기본 모드</li>
-                {/* 추후 다른 게임 모드 추가 */}
+                <Link to="/" className="sidebar-menu-link no-underline" onClick={() => setIsOpen(false)}>
+                  <li>기본 모드</li>
+                </Link>
               </ul>
             )}
           </li>
           <li>
-            <span className="sidebar-menu-icon">🏆</span>
-            <span>랭킹</span>
+            <Link to="/rank" className="sidebar-menu-link no-underline" onClick={() => setIsOpen(false)}>
+              <span className="sidebar-menu-icon">🏆</span>
+              <span>랭킹</span>
+            </Link>
           </li>
           <li>
-            <span className="sidebar-menu-icon">👤</span>
-            <span>내 정보</span>
+            <Link to="/profile" className="sidebar-menu-link no-underline" onClick={() => setIsOpen(false)}>
+              <span className="sidebar-menu-icon">👤</span>
+              <span>내 정보</span>
+            </Link>
           </li>
         </ul>
       </nav>
-    </div>
+    </>
   );
 }
 

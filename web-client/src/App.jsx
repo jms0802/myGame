@@ -1,34 +1,31 @@
 // src/App.jsx
 import React from "react";
-import RicochetRobotGame from "./RicochetRobotGame.jsx";
 import "./App.css";
 import "./index.css";
-import useGuestUID from "./hooks/useGuestUID.js";
-import UserInfoButton from "./components/UserInfoButton.jsx";
-import SideBarMenu from "./components/SideBarMenu.jsx";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import useGuestUID from "./hooks/useGuestUID";
+import SideBarMenu from "./components/SideBarMenu";
+import Main from "./pages/Main";
+import Profile from "./pages/Profile";
 
 function App() {
   const { uid, nickname, refreshUser } = useGuestUID();
 
-  if (!uid) {
-    return <div>Loading...</div>;
-  }
-
-  const handleUserUpdate = () => {
-    if (refreshUser) {
-      refreshUser();
-    }
-  };
+  if (!uid) return <div>Loading...</div>;
 
   return (
     <DarkModeProvider>
-      <RicochetRobotGame />
-      <UserInfoButton
-        user={{ uid, nickname }}
-        onUserUpdate={handleUserUpdate}
-      />
-      <SideBarMenu user={{ uid, nickname }} />
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <BrowserRouter>
+          {/* 공통 사이드바 */}
+          <SideBarMenu user={{ uid, nickname }} />
+          <Routes>
+            <Route path="/" element={<Main user={{ uid, nickname, refreshUser }} />} />
+            <Route path="/profile" element={<Profile user={{ uid, nickname, refreshUser }} />} />
+          </Routes>
+        </BrowserRouter>
+      </React.Suspense>
     </DarkModeProvider>
   );
 }
