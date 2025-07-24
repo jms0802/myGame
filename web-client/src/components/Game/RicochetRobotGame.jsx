@@ -40,49 +40,54 @@ const createInitialBoard = () => {
   for (let i = 0; i < wallCount; i++) {
     const x = Math.floor(Math.random() * BOARD_SIZE);
     const y = Math.floor(Math.random() * BOARD_SIZE);
-    
+
     // 현재 셀의 벽 개수 확인
     const currentWalls = board[y][x].walls.size;
     if (currentWalls >= 3) continue; // 이미 3개의 벽이 있으면 건너뛰기
 
     // 가능한 방향들 중에서 선택
-    const availableDirections = Object.values(WALL_TYPES).filter(direction => {
-      // 이미 해당 방향에 벽이 있는지 확인
-      if (board[y][x].walls.has(direction)) return false;
+    const availableDirections = Object.values(WALL_TYPES).filter(
+      (direction) => {
+        // 이미 해당 방향에 벽이 있는지 확인
+        if (board[y][x].walls.has(direction)) return false;
 
-      // 반대쪽 셀의 벽 개수 확인
-      let oppositeX = x;
-      let oppositeY = y;
+        // 반대쪽 셀의 벽 개수 확인
+        let oppositeX = x;
+        let oppositeY = y;
 
-      switch (direction) {
-        case WALL_TYPES.RIGHT:
-          if (x + 1 >= BOARD_SIZE) return false;
-          oppositeX = x + 1;
-          break;
-        case WALL_TYPES.LEFT:
-          if (x - 1 < 0) return false;
-          oppositeX = x - 1;
-          break;
-        case WALL_TYPES.TOP:
-          if (y - 1 < 0) return false;
-          oppositeY = y - 1;
-          break;
-        case WALL_TYPES.BOTTOM:
-          if (y + 1 >= BOARD_SIZE) return false;
-          oppositeY = y + 1;
-          break;
+        switch (direction) {
+          case WALL_TYPES.RIGHT:
+            if (x + 1 >= BOARD_SIZE) return false;
+            oppositeX = x + 1;
+            break;
+          case WALL_TYPES.LEFT:
+            if (x - 1 < 0) return false;
+            oppositeX = x - 1;
+            break;
+          case WALL_TYPES.TOP:
+            if (y - 1 < 0) return false;
+            oppositeY = y - 1;
+            break;
+          case WALL_TYPES.BOTTOM:
+            if (y + 1 >= BOARD_SIZE) return false;
+            oppositeY = y + 1;
+            break;
+        }
+
+        // 반대쪽 셀의 벽 개수가 3개 이상이면 건너뛰기
+        if (board[oppositeY][oppositeX].walls.size >= 3) return false;
+
+        return true;
       }
-
-      // 반대쪽 셀의 벽 개수가 3개 이상이면 건너뛰기
-      if (board[oppositeY][oppositeX].walls.size >= 3) return false;
-
-      return true;
-    });
+    );
 
     if (availableDirections.length === 0) continue;
 
     // 가능한 방향 중에서 랜덤하게 선택
-    const direction = availableDirections[Math.floor(Math.random() * availableDirections.length)];
+    const direction =
+      availableDirections[
+        Math.floor(Math.random() * availableDirections.length)
+      ];
 
     // 벽 추가
     board[y][x].walls.add(direction);
@@ -153,7 +158,7 @@ const generateUniquePositions = () => {
   return { robots, target: { ...targetPosition, color: targetColor } };
 };
 
-const RicochetRobotGame = ( ) => {
+const RicochetRobotGame = () => {
   const { robots: initialRobots, target: initialTarget } =
     generateUniquePositions();
 
@@ -167,6 +172,7 @@ const RicochetRobotGame = ( ) => {
   const [showClearMessage, setShowClearMessage] = useState(false);
   const [clearMoveCount, setClearMoveCount] = useState(0);
   const { dark } = useDarkMode();
+  const [showHelp, setShowHelp] = useState(false);
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
   const calculateHighlightedCells = useCallback(
@@ -626,36 +632,36 @@ const RicochetRobotGame = ( ) => {
           ? "#dedede"
           : "dimgray"
         : dark
-        ? "#7d7d7d"
-        : "#d3d3d3",
+          ? "#7d7d7d"
+          : "#d3d3d3",
       borderRightColor: cell.walls.has(WALL_TYPES.RIGHT)
         ? dark
           ? "#dedede"
           : "dimgray"
         : dark
-        ? "#7d7d7d"
-        : "#d3d3d3",
+          ? "#7d7d7d"
+          : "#d3d3d3",
       borderBottomColor: cell.walls.has(WALL_TYPES.BOTTOM)
         ? dark
           ? "#dedede"
           : "dimgray"
         : dark
-        ? "#7d7d7d"
-        : "#d3d3d3",
+          ? "#7d7d7d"
+          : "#d3d3d3",
       borderLeftColor: cell.walls.has(WALL_TYPES.LEFT)
         ? dark
           ? "#dedede"
           : "dimgray"
         : dark
-        ? "#7d7d7d"
-        : "#d3d3d3",
+          ? "#7d7d7d"
+          : "#d3d3d3",
       backgroundColor: isHighlighted
         ? dark
           ? "rgb(140 246 140 / 45%)"
           : "rgba(144, 238, 144, 0.3)"
         : dark
-        ? "#434343"
-        : "white",
+          ? "#434343"
+          : "white",
       cursor: robot || isHighlighted ? "pointer" : "default",
     };
 
@@ -695,79 +701,110 @@ const RicochetRobotGame = ( ) => {
   };
 
   return (
-    <div className="game-container bg-gray-50 w-fit mx-auto">
-      <h1 className="game-title">리코셰 로봇</h1>
+    <div className="w-full h-full bg-[var(--main-bg)]">
+      <div className="game-container flex flex-col items-center p-4 md:p-8 max-w-screen-md mx-auto">
+        <div className="flex items-center justify-between mt-8 mb-10">
+          <h1 className="game-title text-2xl font-bold text-center flex-1">
+            리코셰 로봇
+          </h1>
+          <button
+            className="ml-2 rounded-full bg-gray-200 hover:bg-gray-300 text-lg"
+            aria-label="게임 설명"
+            onClick={() => setShowHelp(true)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+              />
+            </svg>
+          </button>
+        </div>
 
-      {/* 클리어 메시지 */}
-      {showClearMessage && (
-        <div className="clear-message">
-          <h2>클리어!</h2>
-          <p>
-            이동 횟수: <span className="count">{clearMoveCount}</span>
+        {/* 게임 설명 모달 */}
+        {showHelp && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/40"
+            onClick={() => setShowHelp(false)}
+          >
+            <div
+              className="bg-white rounded-xl shadow-lg p-6 w-full max-w-xs"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg font-bold mb-2">게임 설명</h2>
+              <p className="mb-1">목표: 색깔 원에 해당 로봇을 도달시키세요!</p>
+              <p>로봇은 벽이나 다른 로봇에 부딪힐 때까지 계속 이동합니다.</p>
+              <button
+                className="mt-4 w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                onClick={() => setShowHelp(false)}
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 클리어 메시지 */}
+        {showClearMessage && (
+          <div className="clear-message">
+            <h2>클리어!</h2>
+            <p>
+              이동 횟수: <span className="count">{clearMoveCount}</span>
+            </p>
+          </div>
+        )}
+
+        <div className="game-info mb-4 text-center">
+          <p className="move-count text-lg">
+            이동 횟수: <span className="count">{moveCount}</span>
           </p>
         </div>
-      )}
 
-      <div className="game-info">
-        {/* <p className="selected-robot">
-          선택된 로봇:{" "}
-          {selectedRobot ? (
-            <span
-              className="robot-name"
-              style={{
-                color: robots.find((r) => r.id === selectedRobot)?.color,
-              }}
-            >
-              {selectedRobot.toUpperCase()}
-            </span>
-          ) : (
-            "없음"
-          )}
-        </p> */}
-        <p className="move-count">
-          이동 횟수: <span className="count">{moveCount}</span>
-        </p>
-      </div>
-
-      <div
-        className="game-board"
-        style={{
-          gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
-        }}
-      >
-        {Array(BOARD_SIZE)
-          .fill(null)
-          .map((_, y) =>
-            Array(BOARD_SIZE)
-              .fill(null)
-              .map((_, x) => renderCell(x, y))
-          )}
-      </div>
-
-      <div className="controls">
-        <div className="robot-buttons">
-          {robots.map((robot) => (
-            <button
-              key={robot.id}
-              className={`robot-button ${
-                selectedRobot === robot.id ? "active" : ""
-              }`}
-              style={{ backgroundColor: robot.color }}
-              onClick={() => handleRobotSelect(robot.id)}
-            >
-              {robot.id.toUpperCase()} 로봇
-            </button>
-          ))}
+        <div
+          className="game-board grid mb-6"
+          style={{
+            gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
+          }}
+        >
+          {Array(BOARD_SIZE)
+            .fill(null)
+            .map((_, y) =>
+              Array(BOARD_SIZE)
+                .fill(null)
+                .map((_, x) => renderCell(x, y))
+            )}
         </div>
 
-        <button onClick={resetGame} className="reset-button">
-          🔄 로봇 리셋
-        </button>
-      </div>
-
-      <div className="game-instructions">
-        <p>목표: 색깔 원에 해당 로봇을 도달시키세요!</p>
-        <p>로봇은 벽이나 다른 로봇에 부딪힐 때까지 계속 이동합니다.</p>
+        <div className="controls flex flex-col items-center gap-4">
+          <div className="robot-buttons grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+            {robots.map((robot) => (
+              <button
+                key={robot.id}
+                className={`robot-button px-4 py-2 rounded-lg font-bold text-white border-2 ${
+                  selectedRobot === robot.id ? "active" : ""
+                }`}
+                style={{ backgroundColor: robot.color }}
+                onClick={() => handleRobotSelect(robot.id)}
+              >
+                {robot.id.toUpperCase()} 로봇
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={resetGame}
+            className="reset-button px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg border-2 transition"
+          >
+            🔄 로봇 리셋
+          </button>
+        </div>
       </div>
     </div>
   );

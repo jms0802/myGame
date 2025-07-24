@@ -3,11 +3,12 @@ import React, { useState } from "react";
 import { useDarkMode } from "../contexts/DarkModeContext";
 import { Link } from "react-router-dom";
 import "./SideBarMenu.css";
-import { useGuestUID, createGuestUser} from "../hooks/useGuestUID";
+import { useAuth } from "../contexts/AuthContext";
 import LoginModal from "./LoginModal";
+import { createGuestUser } from "../hooks/useGuestUID";
 
 function SideBarMenu() {
-  const { user, refreshUser } = useGuestUID();
+  const { user, refreshUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -58,8 +59,7 @@ function SideBarMenu() {
               <>
                 <div className="sidebar-profile-name">{user.nickname}</div>
                 <div
-                  className="sidebar-profile-uid"
-                  style={{ cursor: "pointer" }}
+                  className="sidebar-profile-uid cursor-pointer"
                   onClick={() => {
                     navigator.clipboard.writeText(user.uid);
                     setCopied(true);
@@ -68,11 +68,21 @@ function SideBarMenu() {
                   aria-label="UID 복사"
                   title="클릭하면 UID가 복사됩니다"
                 >
-                  UID: <span className="sidebar-profile-uid-value">{user.uid}</span>
-                  {copied && (
-                    <span className="sidebar-profile-uid-copied">복사됨!</span>
-                  )}
+                  UID:{" "}
+                  <span
+                    className="sidebar-profile-uid-value max-w-[120px] inline-block align-middle truncate"
+                    style={{ verticalAlign: "middle" }}
+                  >
+                    {user.uid && user.uid.length > 16
+                      ? `${user.uid.slice(0, 8)}...${user.uid.slice(-4)}`
+                      : user.uid}
+                  </span>
                 </div>
+                {copied && (
+                  <span className="sidebar-profile-uid-copied text-green-500 text-xs">
+                    복사됨!
+                  </span>
+                )}
               </>
             ) : (
               <button
@@ -149,7 +159,14 @@ function SideBarMenu() {
             <Link
               to="/rank"
               className="sidebar-menu-link no-underline"
-              onClick={() => setIsOpen(false)}
+              onClick={(e) => {
+                if (!user.uid) {
+                  e.preventDefault();
+                  alert("로그인이 필요합니다.");
+                  return;
+                }
+                setIsOpen(false);
+              }}
             >
               <span className="sidebar-menu-icon">🏆</span>
               <span>랭킹</span>
@@ -159,7 +176,14 @@ function SideBarMenu() {
             <Link
               to="/profile"
               className="sidebar-menu-link no-underline"
-              onClick={() => setIsOpen(false)}
+              onClick={(e) => {
+                if (!user.uid) {
+                  e.preventDefault();
+                  alert("로그인이 필요합니다.");
+                  return;
+                }
+                setIsOpen(false);
+              }}
             >
               <span className="sidebar-menu-icon">👤</span>
               <span>내 정보</span>

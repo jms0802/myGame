@@ -1,18 +1,4 @@
 @import "tailwindcss";
-
-body.dark {
-  --main-bg: #181818;
-  --main-color: #eee;
-}
-:root {
-  --main-bg: #fff;
-  --main-color: #222;
-}
-body, .game-container {
-  background-color: var(--main-bg);
-  color: var(--main-color);
-}
-
 /* 
   아래 기존 글로벌 스타일은 Tailwind className으로 대체하므로 삭제/주석 처리
   (필요시 Tailwind에서 직접 className으로 적용)

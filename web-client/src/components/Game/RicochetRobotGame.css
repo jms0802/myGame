@@ -14,7 +14,6 @@
 .game-title {
   font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 24px;
   color: var(--main-color);
   /* 라이트 모드 기본 텍스트 색상 */
   text-align: center;
@@ -38,6 +37,7 @@
 .move-count {
   font-size: 1.125rem;
   margin: 5px 0px;
+  color:var(--main-color);
 }
 
 .count {
@@ -64,8 +64,8 @@
 .game-cell {
   box-sizing: border-box;
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   border: 1px solid var(--border-color);
   /* 라이트 모드 기본 테두리 색상은 JS에서 동적으로 설정 */
   background-color: var(--game-board-bg);
@@ -215,29 +215,30 @@
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-  .game-container {
-    padding: 16px;
-  }
-
   .game-title {
-    font-size: 1.5rem;
-    margin-bottom: 16px;
+    font-size: calc(1rem + 1.8vw);
   }
 
   .game-cell {
-    width: 40px;
-    height: 40px;
+    width: calc(8vw + 4px);
+    height: calc(8vw + 4px);
+    max-width: 52px;
+    max-height: 52px;
   }
 
   .robot {
-    width: 28px;
-    height: 28px;
-    font-size: 0.75rem;
+    width: calc(6vw + 2px);
+    height: calc(6vw + 2px);
+    max-width: 38px;
+    max-height: 38px;
+    font-size: calc(0.35rem + 1.4vw);
   }
 
   .target {
-    width: 18px;
-    height: 18px;
+    width: calc(4vw + 1px);
+    height: calc(4vw + 1px);
+    max-width: 24px;
+    max-height: 24px;
   }
 
   .robot-buttons {
@@ -248,83 +249,17 @@
 
 @media (max-width: 480px) {
   .game-cell {
-    width: 28px;
-    height: 28px;
+    max-width: 38px;
+    max-height: 38px;
   }
 
   .robot {
-    width: 18px;
-    height: 18px;
-    font-size: 0.525rem;
+    max-width: 38px;
+    max-height: 38px;
   }
 
   .target {
-    width: 12px;
-    height: 12px;
+    max-width: 36px;
+    max-height: 36px;
   }
 }
-
-/* .dark .game-container {
-  background-color: #282828;
-}
-
-.dark .game-title { 
-  color: #e0e0e0;
-}
-
-.dark .instructions {
-  color: #b0b0b0;
-}
-
-.dark .game-board {
-  background-color: #2d2d2d;
-  border-color: #404040;
-}
-
-.dark .game-cell {
-  background-color: #2d2d2d;
-  border-color: #404040;
-}
-
-.dark .game-cell:hover {
-  background-color: #363636;
-}
-
-.dark .game-instructions { 
-  color: #b0b0b0;
-}
-
-.dark .count { 
-  color: #60a5fa;
-}
-
-.dark .robot,
-.dark .target  {
-  border: 2px solid #434343;
-}
-
-.dark .robot-button { 
-  border-color: #404040;
-}
-
-.dark .robot-button.active { 
-  border-color: #e0e0e0;
-}
-
-.dark .robot.selected {
-  border-color: #e0e0e0;
-}
-
-.dark .target {
-  border: 2px solid #222;
-}
-
-.dark .reset-button {
-  background-color: #404040;
-  border-color: #505050;
-}
-
-.dark .reset-button:hover {
-  background-color: #505050;
-  border-color: #606060;
-} */

@@ -39,3 +39,7 @@ export function createGuestUser() {
   localStorage.setItem("nickname", newNickname);
   return newUser;
 }
+
+export function editNickname(user, nickname) {
+  localStorage.setItem("nickname", nickname);
+}

@@ -96,7 +96,6 @@
     color: var(--btn-default);
 }
 .sidebar-profile-uid-copied {
-    margin-left: 8px;
     color: var(--btn-default);
     font-size: 0.92rem;
     font-weight: 600;
