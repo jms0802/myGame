@@ -22,6 +22,7 @@ function App() {
               <Route path="/" element={<Main />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/rank" element={<Rank />} />
+              <Route path="/*" element={<Main />} />
             </Routes>
           </BrowserRouter>
         </React.Suspense>
