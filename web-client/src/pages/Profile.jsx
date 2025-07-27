@@ -1,15 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import LoginModal from "../components/LoginModal";
-import { editNickname } from "../hooks/useGuestUID";
+import { useGoogleLogin } from "../hooks/useGoogleLogin";
+import { useNavigate } from "react-router-dom";
+import { checkNickname } from "../api/authApi";
 
 export default function Profile() {
-  const { user, setUser, refreshUser } = useAuth();
-  const [loginOpen, setLoginOpen] = useState(false);
+  const { user, editNickname, isLoading } = useAuth(); // isLoading 추가
+  const { loginWithGoogle } = useGoogleLogin();
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
-  const [nickname, setNickname] = useState(user.nickname);
+  const [nickname, setNickname] = useState(user?.nickname || "");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [nicknameStatus, setNicknameStatus] = useState({ available: true, message: "" });
+  const [isChecking, setIsChecking] = useState(false);
 
-  // 닉네임 변경 핸들러
+  // 유저 정보가 없으면 메인 페이지로 리다이렉션
+  useEffect(() => {
+    if (!isLoading && !user?.uid) {
+      alert("로그인이 필요합니다.");
+      navigate("/");
+    }
+  }, [user, navigate, isLoading]);
+
+  useEffect(() => {
+    setNickname(user?.nickname || "");
+  }, [user]);
+
+  // 닉네임 중복확인 함수
+  const checkNicknameAvailability = async (nickname) => {
+    if (!nickname.trim() || nickname === user?.nickname) {
+      setNicknameStatus({ available: true, message: "" });
+      return;
+    }
+
+    setIsChecking(true);
+    try {
+      const result = await checkNickname(nickname, user?.uid);
+      if (result) {
+        setNicknameStatus({
+          available: result.available,
+          message: result.message
+        });
+      } else {
+        setNicknameStatus({
+          available: false,
+          message: "중복확인 중 오류가 발생했습니다."
+        });
+      }
+    } catch (error) {
+      setNicknameStatus({
+        available: false,
+        message: "중복확인 중 오류가 발생했습니다.", error
+      });
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  // 닉네임 변경 핸들러 (디바운스 적용)
   const handleNicknameChange = (e) => {
     const value = e.target.value;
     if (value.length > 15) {
@@ -17,33 +65,62 @@ export default function Profile() {
       setNickname(value.slice(0, 15));
     } else {
       setNickname(value);
+      // 디바운스: 500ms 후 중복확인 실행
+      clearTimeout(window.nicknameCheckTimeout);
+      window.nicknameCheckTimeout = setTimeout(() => {
+        checkNicknameAvailability(value);
+      }, 500);
     }
   };
 
   // 닉네임 저장
-  const handleNicknameSave = () => {
-    if (nickname.trim() && nickname !== user.nickname) {
-      setUser({ ...user, nickname });
-      editNickname(user, nickname);
+  const handleNicknameSave = async () => {
+    if (!nickname.trim() || nickname === user?.nickname) {
+      setEditing(false);
+      return;
     }
-    setEditing(false);
+
+    // 중복확인 결과가 없거나 사용 불가능한 경우
+    if (!nicknameStatus.available) {
+      alert("사용할 수 없는 닉네임입니다.");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const result = await editNickname(user, nickname);
+      if (result.success) {
+        alert(result.message);
+        setEditing(false);
+        setNicknameStatus({ available: true, message: "" });
+      } else {
+        alert(result.message);
+        setNickname(user?.nickname || "");
+      }
+    } catch (error) {
+      alert("닉네임 변경 중 오류가 발생했습니다.", error);
+      setNickname(user?.nickname || "");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   // 엔터로 저장
   const handleNicknameKeyDown = (e) => {
     if (e.key === "Enter") handleNicknameSave();
     if (e.key === "Escape") {
-      setNickname(user.nickname);
+      setNickname(user?.nickname || "");
       setEditing(false);
+      setNicknameStatus({ available: true, message: "" });
     }
   };
 
+  // 로딩 중이거나 유저 정보가 없으면 로딩 표시
+  if (isLoading || !user?.uid) {
+    return <div>Loading...</div>;
+  }
+
   const user1 = {
-    uid: "123e4567-abcd-1234-ef00-1234567890ab",
-    email: "guest@example.com",
-    googleId: null,
-    nickname: "Guest_123e4567",
-    createdAt: new Date("2024-06-01T12:00:00Z"),
     history: [
       { puzzle: "example #1", result: "성공", date: "2024-06-01", score: 100 },
       { puzzle: "example #2", result: "실패", date: "2024-06-02", score: 60 },
@@ -83,33 +160,59 @@ export default function Profile() {
               >
                 {editing ? (
                   <>
-                    <input
-                      className="border rounded px-2 py-1 text-lg w-45"
-                      value={nickname}
-                      onChange={handleNicknameChange}
-                      onKeyDown={handleNicknameKeyDown}
-                      autoFocus
-                      style={{ color: "var(--main-color)", background: "var(--main-bg)" }}
-                    />
-                    <button
-                      className="ml-2 px-2 py-1 rounded bg-blue-500 text-white text-sm"
-                      onClick={handleNicknameSave}
-                    >
-                      확인
-                    </button>
-                    <button
-                      className="ml-1 px-2 py-1 rounded bg-gray-300 text-gray-700 text-sm"
-                      onClick={() => {
-                        setNickname(user.nickname);
-                        setEditing(false);
-                      }}
-                    >
-                      취소
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-end gap-2">
+                        <input
+                          className="border rounded px-2 py-1 text-lg w-45"
+                          value={nickname}
+                          onChange={handleNicknameChange}
+                          onKeyDown={handleNicknameKeyDown}
+                          autoFocus
+                          disabled={isUpdating}
+                          style={{ color: "var(--main-color)", background: "var(--main-bg)" }}
+                        />
+                        <button
+                          className={`ml-2 px-2 py-1 rounded text-white text-sm ${
+                            isUpdating || !nicknameStatus.available
+                              ? "bg-gray-400"
+                              : "bg-blue-500"
+                          }`}
+                          onClick={handleNicknameSave}
+                          disabled={isUpdating || !nicknameStatus.available}
+                        >
+                          {isUpdating ? "변경 중..." : "확인"}
+                        </button>
+                        <button
+                          className="ml-1 px-2 py-1 rounded bg-gray-300 text-gray-700 text-sm"
+                          onClick={() => {
+                            setNickname(user?.nickname || "");
+                            setEditing(false);
+                            setNicknameStatus({ available: true, message: "" });
+                          }}
+                          disabled={isUpdating}
+                        >
+                          취소
+                        </button>
+                      </div>
+                      {/* 중복확인 상태 표시 */}
+                      {nickname && nickname !== user?.nickname && (
+                        <div className="text-sm">
+                          {isChecking ? (
+                            <span style={{ color: "var(--count-color)" }}>중복확인 중...</span>
+                          ) : (
+                            <span style={{ 
+                              color: nicknameStatus.available ? "#22c55e" : "#ef4444" 
+                            }}>
+                              {nicknameStatus.message}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <>
-                    <span className="user-nickname">{user.nickname}</span>
+                    <span className="user-nickname">{user?.nickname}</span>
                     <button
                       className="edit-nickname cursor-pointer"
                       onClick={() => setEditing(true)}
@@ -140,17 +243,17 @@ export default function Profile() {
                 style={{ color: "var(--count-color)", background: "transparent" }}
                 title="클릭하면 UID가 복사됩니다"
                 onClick={() => {
-                  navigator.clipboard.writeText(user.uid);
+                  navigator.clipboard.writeText(user?.uid || "");
                 }}
               >
-                UID: {user.uid}
+                UID: {user?.uid}
               </div>
             </div>
           </div>
           {/* 연동 정보 */}
           <div className="flex items-center justify-center gap-2 mt-4">
             <span style={{ color: "var(--main-color)" }}>Linked with Google</span>
-            {user1.googleId ? (
+            {user?.googleId ? (
               // 체크 아이콘 (연동됨)
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -166,7 +269,9 @@ export default function Profile() {
               </svg>
             ) : (
               // 연동 추가 아이콘 (연동 안됨)
-              <button className="google-link-button cursor-pointer">
+              <button className="google-link-button cursor-pointer" onClick={async () => {
+                loginWithGoogle();
+              }}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -231,17 +336,6 @@ export default function Profile() {
           </div>
         </div>
       </div>
-      <LoginModal
-        open={loginOpen}
-        onClose={() => setLoginOpen(false)}
-        onGuestLogin={() => {
-          refreshUser();
-          setLoginOpen(false);
-        }}
-        onGoogleLogin={() => {
-          setLoginOpen(false);
-        }}
-      />
     </>
   );
 }

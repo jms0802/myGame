@@ -1,51 +1,35 @@
 const express = require("express");
 const router = express.Router();
 const authController = require('../controllers/authController');
-const auth = require("../middleware/auth");
-
-/**
- * 로그인 페이지
- * GET /login
- */
-router.get(["/login"], authController.getLoginPage);
-
-/**
- * 로그인 확인
- * POST /login
- */
-router.post("/login", authController.login);
+const apiAuth = require("../middleware/apiAuth"); // 새로 추가
 
 /**
  * Google 로그인
- * Get /auth/google
+ * Get /google
  */
 router.get("/google", authController.googleAuth);
 
 /**
  * Google 로그인 콜백
- * Get /auth/google/callback
+ * Get /google/callback
  */
 router.get("/google/callback", authController.googleCallback);
-
-/**
- * 회원가입 페이지
- * GET /register
- */
-router.get("/register", authController.getRegisterPage);
 
 /**
  * 회원가입
  * POST /register
  */
-router.post("/register", authController.register);
+router.post("/register/guest", authController.registerGuest);
+/**
+ * 유저 googleId 저장
+ * POST /register/google-id
+ */
+router.post("/register/google", authController.registerGoogle);
 
 /**
- * 회원가입 아이디 중복 체크
- * POST /register/check-id
+ * 현재 사용자 정보 가져오기
+ * GET /me
  */
-router.post("/register/check-id", authController.checkUsername);
-
-// 로그아웃 라우트
-router.post("/logout", authController.logout);
+router.get("/me", apiAuth, authController.getCurrentUser);
 
 module.exports = router;

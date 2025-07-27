@@ -236,10 +236,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  
-    position: absolute;
-    left: 18px;
-    bottom: 18px;
     z-index: 100;
     background: none;
     border: none;
