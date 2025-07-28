@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3001";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // 게스트 회원가입
 export async function createUserFromGuest(uid, nickname) {
