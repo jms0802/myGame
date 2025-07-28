@@ -19,12 +19,13 @@ export async function createUserFromGuest(uid, nickname) {
   }
   
   // 구글 회원가입
-  export async function createUserFromGoogle(uid, nickname, token) {
+  export async function createUserFromGoogle(uid, nickname) {
     try {
       const response = await fetch(`${API_URL}/auth/register/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uid, nickname, token }),
+        credentials: 'include',
+        body: JSON.stringify({ uid, nickname }),
       });
       if (response.ok) {
         return await response.json();
@@ -37,13 +38,11 @@ export async function createUserFromGuest(uid, nickname) {
   }
   
   // 토큰으로 사용자 정보 조회
-  export async function fetchUserInfo(token) {
+  export async function fetchUserInfo() {
     try {
       const response = await fetch(`${API_URL}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        method: 'GET',
+        credentials: 'include',
       });
       if (response.ok) {
         return await response.json();
@@ -56,14 +55,14 @@ export async function createUserFromGuest(uid, nickname) {
   }
 
 // 닉네임 변경 API
-export async function updateNickname(uid, nickname, token) {
+export async function updateNickname(uid, nickname) {
   try {
     const response = await fetch(`${API_URL}/api/user/nickname`, {
       method: "PUT",
       headers: { 
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` })
+        "Content-Type": "application/json"
       },
+      credentials: 'include', // 쿠키 자동 포함
       body: JSON.stringify({ uid, nickname }),
     });
     

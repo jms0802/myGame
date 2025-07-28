@@ -20,13 +20,26 @@ exports.googleCallback = [
       { id: req.user._id, googleId: req.user.googleId },
       jwtSecret
     );
+
+    res.cookie('authToken', token, {
+      httpOnly: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
     const nickname = req.user.displayName || req.user.nickname;
 
     const user = await User.findOne({ googleId: req.user.googleId });
 
     res.send(`
       <script>
-        window.opener.postMessage({ token: "${token}", nickname: "${nickname}", existUser: ${!!user} }, "http://localhost:5173");
+        if (${!!user}) {
+          window.opener.postMessage({ nickname: "${nickname}", existUser: true }, "http://localhost:5173");
+        } else {
+          window.opener.postMessage({ nickname: "${nickname}", existUser: false, googleId: "${req.user.googleId}" }, "http://localhost:5173");
+        }
         window.close();
       </script>
     `);
@@ -69,12 +82,13 @@ exports.registerGuest = asyncHandler(async (req, res) => {
 
 // 구글 유저 저장
 exports.registerGoogle = asyncHandler(async (req, res) => {
-  const { uid, nickname, token } = req.body;
-  const decoded = jwt.verify(token, jwtSecret);
+  const { uid, nickname } = req.body;
+  const decoded = jwt.verify(req.cookies.authToken, jwtSecret);
+  const googleId = decoded.googleId;
   const user = await User.findOne({ uid: uid });
 
   if (!user) {
-    User.create({ uid, nickname, googleId: decoded.googleId });
+    User.create({ uid, nickname, googleId });
   } else {
     user.nickname = nickname;
     await user.save();
@@ -83,24 +97,17 @@ exports.registerGoogle = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     message: "사용자가 성공적으로 생성되었습니다.",
-    user: {
-      uid: user.uid,
-      nickname: user.nickname,
-      email: user.email,
-      googleId: user.googleId,
-    },
   });
 });
 
 // 현재 사용자 정보 가져오기
 exports.getCurrentUser = asyncHandler(async (req, res) => {
-  const user = req.user;
+  const user = await User.findOne({ googleId: req.user.googleId });
 
   res.json({
     success: true,
     message: "사용자 정보가 성공적으로 가져왔습니다.",
     user: {
-      id: user._id,
       uid: user.uid,
       nickname: user.nickname,
       email: user.email,

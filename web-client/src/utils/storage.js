@@ -1,8 +1,3 @@
-export function setAuthCookie(token, days = 7) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `authToken=${token}; expires=${expires}; path=/`;
-}
-
 export function getAuthCookie() {
   const match = document.cookie.match('(^|;)\\s*authToken\\s*=\\s*([^;]+)');
   return match ? match.pop() : null;

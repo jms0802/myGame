@@ -15,11 +15,17 @@ const port = process.env.PORT || 3001;
 connectDb();
 
 // CORS 설정
+const allowedOrigins = [
+  'http://localhost:5173',         // 개발용
+  'https://my-game-roan-dev.vercel.app',
+  'https://my-game-roan.vercel.app',
+];
+
+
 app.use(cors({
-  origin: 'http://localhost:5173', // React 앱의 주소
+  origin: allowedOrigins,
   credentials: true, // 쿠키 포함 허용
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // 미들웨어 설정

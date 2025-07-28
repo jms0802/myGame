@@ -59,18 +59,19 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const token = getAuthCookie();
-        if (token) {
-          const userInfo = await fetchUserInfo(token);
-          if (userInfo) {
-            setUser(userInfo.user);
-          }
+        const userInfo = await fetchUserInfo();
+        if (userInfo) {
+          setUser(userInfo.user);
         }
-        
+
         // 로컬 스토리지에서 게스트 사용자 정보 확인
         const { storedUID, storedNickname } = getLocalUser();
         if (storedUID && storedNickname) {
-          setUser(prev => ({ ...prev, uid: storedUID, nickname: storedNickname }));
+          setUser((prev) => ({
+            ...prev,
+            uid: storedUID,
+            nickname: storedNickname,
+          }));
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
