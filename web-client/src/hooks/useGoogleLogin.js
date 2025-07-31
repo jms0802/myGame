@@ -13,11 +13,20 @@ export function useGoogleLogin() {
   const loginWithGoogle = async () => {
     setIsLoading(true);
 
-    window.open(
+    const popup = window.open(
       `${API_URL}/auth/google`,
       "googleLogin",
       "width=500,height=600"
     );
+
+    // 팝업창이 닫혔는지 확인하는 interval
+    const checkClosed = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(checkClosed);
+        setIsLoading(false);
+        window.removeEventListener("message", messageHandler);
+      }
+    }, 1000);
 
     //구글 로그인 완료 후 처리
     const messageHandler = async (event) => {
@@ -37,8 +46,11 @@ export function useGoogleLogin() {
       removeLocalUser();
       setAuthCookie(token);
 
+      // 성공적으로 로그인 완료 시
+      clearInterval(checkClosed);
       setIsLoading(false);
       window.removeEventListener("message", messageHandler);
+      popup.close(); // 팝업창 닫기
       return true;
     };
 

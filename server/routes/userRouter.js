@@ -9,12 +9,6 @@ const { getProfile, initUser, updateNickname, checkNickname } = require("../cont
 router.get('/profile', getProfile);
 
 /**
- * 사용자 정보 저장
- * POST /init
- */
-router.post('/init', initUser);
-
-/**
  * 닉네임 변경
  * PUT /nickname
  */

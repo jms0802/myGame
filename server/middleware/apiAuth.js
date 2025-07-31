@@ -31,14 +31,15 @@ const User = require("../models/User");
 //     next();
 // });
 
-module.exports = function (req, res, next) {
+module.exports = async function (req, res, next) {
   const token = req.headers.authorization.split('Bearer ')[1];
   if (!token) {
     return res.status(401).json({ success: false, message: "인증 토큰이 없습니다." });
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const user = await User.findOne({ googleId: decoded.googleId });
+    req.user = user;
     next();
   } catch (err) {
     return res.status(401).json({ success: false, message: "유효하지 않은 토큰입니다." });

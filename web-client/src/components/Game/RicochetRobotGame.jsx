@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import "./RicochetRobotGame.css";
 import { useDarkMode } from "../../contexts/DarkModeContext";
+import { useGameRecord } from "../../hooks/useGameRecord";
 
 const BOARD_SIZE = 10;
 const WALL_TYPES = {
@@ -173,6 +174,8 @@ const RicochetRobotGame = () => {
   const [clearMoveCount, setClearMoveCount] = useState(0);
   const { dark } = useDarkMode();
   const [showHelp, setShowHelp] = useState(false);
+
+  const { saveRecord, loading } = useGameRecord();
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
   const calculateHighlightedCells = useCallback(
@@ -421,14 +424,12 @@ const RicochetRobotGame = () => {
 
         // 타겟에 도달했다면
         if (targetReached) {
-          setClearMoveCount(moveCount + 1); // 현재 무브 카운트 저장
-          setMoveCount(0); // 무브 카운트 즉시 초기화
           setShowClearMessage(true);
-          setSelectedRobot(null);
-
           setTimeout(() => {
             setShowClearMessage(false);
-          }, 1500);
+          }, 2000);
+
+          handleSaveGameRecord();
 
           // 새로운 타겟 생성
           let newTargetPosition;
@@ -463,7 +464,7 @@ const RicochetRobotGame = () => {
             setPrevRobots(newRobots);
             return newRobots;
           });
-          return; // 여기서 함수 종료
+          return;
         }
 
         // 타겟에 도달하지 않았다면 정상적으로 이동
@@ -495,6 +496,32 @@ const RicochetRobotGame = () => {
     setMoveCount(0);
     setHighlightedCells([]);
   }, [prevRobots]);
+
+  // 게임 기록 저장
+  const handleSaveGameRecord = async () => {
+    setClearMoveCount(moveCount + 1); // 현재 무브 카운트 저장
+    setSelectedRobot(null);
+    setHighlightedCells([]);
+
+    const record = {
+      score: moveCount,
+      playDate: new Date(),
+      isPublic: false,
+      stageData: {
+        robots: robots,
+        target: target,
+        board: board,
+      },
+    };
+
+    try {
+      await saveRecord(record);
+    } catch (error) {
+      console.error("저장 실패:", error);
+    } finally {
+      setMoveCount(0); // 무브 카운트 즉시 초기화
+    }
+  };
 
   // 로봇 선택 시 하이라이트 계산
   const handleRobotSelect = useCallback(
@@ -772,8 +799,36 @@ const RicochetRobotGame = () => {
           className="game-board grid mb-6"
           style={{
             gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
+            position: "relative",
           }}
         >
+          {loading && (
+            <div className="game-loading absolute inset-0 z-20 flex items-center justify-center bg-black/50">
+              <div className="game-loading-spinner mb-2">
+                <svg
+                  className="animate-spin h-8 w-8 text-gray-700"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  aria-label="로딩 중"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="white"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="white"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
           {Array(BOARD_SIZE)
             .fill(null)
             .map((_, y) =>

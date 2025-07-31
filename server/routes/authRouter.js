@@ -19,7 +19,8 @@ router.get("/google/callback", authController.googleCallback);
  * 회원가입
  * POST /register
  */
-router.post("/register/guest", authController.registerGuest);
+//router.post("/register/guest", authController.registerGuest);
+
 /**
  * 유저 googleId 저장
  * POST /register/google-id

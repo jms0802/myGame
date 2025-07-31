@@ -195,6 +195,10 @@
   animation: fadeInOut 2s ease-in-out;
 }
 
+.game-loading {
+  animation: fadeInOut 2s ease-in-out;
+}
+
 @keyframes fadeInOut {
   0% {
     opacity: 0;

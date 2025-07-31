@@ -40,33 +40,25 @@ exports.googleCallback = [
 exports.registerGuest = asyncHandler(async (req, res) => {
   const { uid, nickname } = req.body;
 
-  // 이미 존재하는 사용자인지 확인
-  const existingUser = await User.findOne({ uid });
-  if (existingUser) {
+  if (!uid || !nickname) {
     return res.status(400).json({
-      success: false,
-      message: "이미 존재하는 사용자입니다.",
+      message: "uid 또는 nickname이 필요합니다.",
     });
   }
 
-  // 새 사용자 생성
-  const userData = {
-    uid,
-    nickname,
-    email: null,
-  };
+  let user = await User.findOne({ uid });
 
-  const newUser = await User.create(userData);
+  if (!user) {
+    user = new User({ uid, nickname });
+    await user.save();
 
-  res.json({
-    success: true,
-    message: "사용자가 성공적으로 생성되었습니다.",
-    user: {
-      uid: newUser.uid,
-      nickname: newUser.nickname,
-      email: newUser.email,
-      googleId: newUser.googleId,
-    },
+    return res.status(200).json({
+      message: "새로운 유저 정보 저장",
+    });
+  }
+
+  return res.status(200).json({
+    message: "기존 유저 정보 확인 완료",
   });
 });
 
@@ -94,8 +86,7 @@ exports.registerGoogle = asyncHandler(async (req, res) => {
 
 // 현재 사용자 정보 가져오기
 exports.getCurrentUser = asyncHandler(async (req, res) => {
-  const user = await User.findOne({ googleId: req.user.googleId });
-
+  const user = req.user;
   res.json({
     success: true,
     message: "사용자 정보가 성공적으로 가져왔습니다.",
