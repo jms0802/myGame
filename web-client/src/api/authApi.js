@@ -19,13 +19,12 @@ export async function createUserFromGuest(uid, nickname) {
   }
   
   // 구글 회원가입
-  export async function createUserFromGoogle(uid, nickname) {
+  export async function createUserFromGoogle(uid, nickname, token) {
     try {
       const response = await fetch(`${API_URL}/auth/register/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
-        body: JSON.stringify({ uid, nickname }),
+        body: JSON.stringify({ uid, nickname, token }),
       });
       if (response.ok) {
         return await response.json();
@@ -38,11 +37,14 @@ export async function createUserFromGuest(uid, nickname) {
   }
   
   // 토큰으로 사용자 정보 조회
-  export async function fetchUserInfo() {
+  export async function fetchUserInfo(token) {
     try {
       const response = await fetch(`${API_URL}/auth/me`, {
         method: 'GET',
-        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
       });
       if (response.ok) {
         return await response.json();
@@ -60,7 +62,7 @@ export async function updateNickname(uid, nickname) {
     const response = await fetch(`${API_URL}/api/user/nickname`, {
       method: "PUT",
       headers: { 
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       credentials: 'include', // 쿠키 자동 포함
       body: JSON.stringify({ uid, nickname }),

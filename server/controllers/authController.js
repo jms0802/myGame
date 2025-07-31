@@ -16,30 +16,20 @@ exports.googleCallback = [
     session: false,
   }),
   async (req, res) => {
+    const user = await User.findOne({ googleId: req.user.googleId });
+
     const token = jwt.sign(
       { id: req.user._id, googleId: req.user.googleId },
       jwtSecret
     );
 
-    res.cookie('authToken', token, {
-      httpOnly: process.env.NODE_ENV === 'production',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
-
     const nickname = req.user.displayName || req.user.nickname;
 
-    const user = await User.findOne({ googleId: req.user.googleId });
+    const ClientUrl = process.env.CLIENT_URL;
 
     res.send(`
       <script>
-        if (${!!user}) {
-          window.opener.postMessage({ nickname: "${nickname}", existUser: true }, "http://localhost:5173");
-        } else {
-          window.opener.postMessage({ nickname: "${nickname}", existUser: false, googleId: "${req.user.googleId}" }, "http://localhost:5173");
-        }
+        window.opener.postMessage({ nickname: "${nickname}", existUser: ${!!user}, token: "${token}" }, "${ClientUrl}");
         window.close();
       </script>
     `);
@@ -82,15 +72,17 @@ exports.registerGuest = asyncHandler(async (req, res) => {
 
 // 구글 유저 저장
 exports.registerGoogle = asyncHandler(async (req, res) => {
-  const { uid, nickname } = req.body;
-  const decoded = jwt.verify(req.cookies.authToken, jwtSecret);
+  const { uid, nickname, token } = req.body;
+  const decoded = jwt.verify(token, jwtSecret);
   const googleId = decoded.googleId;
+
   const user = await User.findOne({ uid: uid });
 
   if (!user) {
     User.create({ uid, nickname, googleId });
   } else {
     user.nickname = nickname;
+    user.googleId = googleId;
     await user.save();
   }
 

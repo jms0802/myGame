@@ -32,14 +32,11 @@ const User = require("../models/User");
 // });
 
 module.exports = function (req, res, next) {
-  // 1. 쿠키에서 토큰 추출
-  const token = req.cookies.authToken;
+  const token = req.headers.authorization.split('Bearer ')[1];
   if (!token) {
     return res.status(401).json({ success: false, message: "인증 토큰이 없습니다." });
   }
-
   try {
-    // 2. 토큰 검증
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();

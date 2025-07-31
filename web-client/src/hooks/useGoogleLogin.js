@@ -2,7 +2,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { createUserFromGoogle, fetchUserInfo } from "../api/authApi";
 import { useState } from "react";
 import { nanoid } from "nanoid";
-import { removeLocalUser, getLocalUser } from "../utils/storage";
+import { removeLocalUser, getLocalUser, setAuthCookie } from "../utils/storage";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -23,18 +23,19 @@ export function useGoogleLogin() {
     const messageHandler = async (event) => {
       if (event.origin !== API_URL) return;
 
-      const { nickname, existUser } = event.data;
+      const { nickname, existUser, token } = event.data;
 
       // 새로운 유저 등록인 경우
       if (!existUser) {
         const { storedUID } = getLocalUser();
         let newUid = storedUID || nanoid(12);
-        await createUserFromGoogle(newUid, nickname);
+        await createUserFromGoogle(newUid, nickname, token);
       }
 
-      const userInfo = await fetchUserInfo();
+      const userInfo = await fetchUserInfo(token);
       setUser(userInfo.user);
       removeLocalUser();
+      setAuthCookie(token);
 
       setIsLoading(false);
       window.removeEventListener("message", messageHandler);

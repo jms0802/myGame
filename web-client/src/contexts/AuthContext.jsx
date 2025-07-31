@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
 
     if (token) {
       // 구글 연동 사용자: 서버에 저장
-      const result = await updateNickname(user.uid, newNickname, token);
+      const result = await updateNickname(user.uid, newNickname);
       if (result?.success) {
         setUser({ ...user, nickname: newNickname });
         return { success: true, message: "닉네임이 변경되었습니다." };
@@ -48,8 +48,6 @@ export const AuthProvider = ({ children }) => {
       setLocalNickname(newNickname);
       setUser({ ...user, nickname: newNickname });
 
-      // TODO: 게스트 사용자 닉네임 api 호출
-
       console.log(user.uid, newNickname);
       return { success: true, message: "닉네임이 변경되었습니다." };
     }
@@ -59,7 +57,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const userInfo = await fetchUserInfo();
+        const token = getAuthCookie();
+        const userInfo = await fetchUserInfo(token);
         if (userInfo) {
           setUser(userInfo.user);
         }

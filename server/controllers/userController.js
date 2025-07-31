@@ -42,7 +42,7 @@ exports.initUser = asyncHandler(async (req, res) => {
 });
 
 exports.updateNickname = asyncHandler(async (req, res) => {
-  const { uid, nickname } = req.body;
+  const { uid, nickname, token } = req.body;
 
   if (!uid || !nickname) {
     return res.status(400).json({

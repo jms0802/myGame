@@ -1,3 +1,7 @@
+export function setAuthCookie(token) {
+  document.cookie = `authToken=${token}; path=/;`;
+}
+
 export function getAuthCookie() {
   const match = document.cookie.match('(^|;)\\s*authToken\\s*=\\s*([^;]+)');
   return match ? match.pop() : null;
