@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Rank = require("../models/Rank");
 const GameRecord = require("../models/GameRecord");
 const asyncHandler = require("express-async-handler");
 
@@ -9,7 +10,7 @@ exports.saveGameRecord = asyncHandler(async (req, res) => {
   if (!score || !playDate || !stageData) {
     return res
       .status(400)
-      .json({ success: false, message: "필수 필드가 누락되었습니다." });
+      .json({ success: false, message: "필수 필드가 누락되었습니다.", record: req.body });
   }
 
   const record = new GameRecord({
@@ -23,7 +24,7 @@ exports.saveGameRecord = asyncHandler(async (req, res) => {
   await record.save();
 
   // [rank] 게임 기록 저장 시 랭크 갱신
-  let rank = await require("../models/Rank").findOne({ uid });
+  let rank = await Rank.findOne({ uid });
   if (rank) {
     rank.playCount += 1;
     rank.updatedAt = new Date();
@@ -31,10 +32,12 @@ exports.saveGameRecord = asyncHandler(async (req, res) => {
   } else {
     const user = await User.findOne({ uid });
     if (user) {
-      await require("../models/Rank").create({
+      // playCount는 해당 uid의 GameRecord 개수로 설정
+      const playCount = await GameRecord.countDocuments({ uid });
+      await Rank.create({
         uid,
         nickname: user.nickname,
-        playCount: 1,
+        playCount: playCount,
         updatedAt: new Date(),
       });
     }

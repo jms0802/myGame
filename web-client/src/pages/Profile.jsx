@@ -3,16 +3,32 @@ import { useAuth } from "../contexts/AuthContext";
 import { useGoogleLogin } from "../hooks/useGoogleLogin";
 import { useNavigate } from "react-router-dom";
 import { checkNickname } from "../api/authApi";
+import { useGameRecord } from "../hooks/useGameRecord";
+import Loading from "../components/Loading";
 
 export default function Profile() {
-  const { user, editNickname, isLoading } = useAuth(); // isLoading 추가
+  const { user, editNickname, isLoading } = useAuth();
+  const { getRecords, loading } = useGameRecord();
   const { loginWithGoogle } = useGoogleLogin();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [nickname, setNickname] = useState(user?.nickname || "");
   const [isUpdating, setIsUpdating] = useState(false);
-  const [nicknameStatus, setNicknameStatus] = useState({ available: true, message: "" });
+  const [nicknameStatus, setNicknameStatus] = useState({
+    available: true,
+    message: "",
+  });
   const [isChecking, setIsChecking] = useState(false);
+  const [userHistory, setUserHistory] = useState([]);
+  const [showAllHistory, setShowAllHistory] = useState(false); // 추가
+
+  useEffect(() => {
+    const fetchUserHistory = async () => {
+      const history = await getRecords();
+      setUserHistory(history.records);
+    };
+    fetchUserHistory();
+  }, [getRecords]);
 
   // 유저 정보가 없으면 메인 페이지로 리다이렉션
   useEffect(() => {
@@ -39,18 +55,19 @@ export default function Profile() {
       if (result) {
         setNicknameStatus({
           available: result.available,
-          message: result.message
+          message: result.message,
         });
       } else {
         setNicknameStatus({
           available: false,
-          message: "중복확인 중 오류가 발생했습니다."
+          message: "중복확인 중 오류가 발생했습니다.",
         });
       }
     } catch (error) {
       setNicknameStatus({
         available: false,
-        message: "중복확인 중 오류가 발생했습니다.", error
+        message: "중복확인 중 오류가 발생했습니다.",
+        error,
       });
     } finally {
       setIsChecking(false);
@@ -120,13 +137,6 @@ export default function Profile() {
     return <div>Loading...</div>;
   }
 
-  const user1 = {
-    history: [
-      { puzzle: "example #1", result: "성공", date: "2024-06-01", score: 100 },
-      { puzzle: "example #2", result: "실패", date: "2024-06-02", score: 60 },
-    ],
-  };
-
   return (
     <>
       <div
@@ -142,7 +152,10 @@ export default function Profile() {
         >
           {/* 상단 My Info */}
           <div className="w-full py-2">
-            <h1 className="text-center font-bold text-lg" style={{ color: "var(--main-color)" }}>
+            <h1
+              className="text-center font-bold text-lg"
+              style={{ color: "var(--main-color)" }}
+            >
               내 정보
             </h1>
           </div>
@@ -169,7 +182,10 @@ export default function Profile() {
                           onKeyDown={handleNicknameKeyDown}
                           autoFocus
                           disabled={isUpdating}
-                          style={{ color: "var(--main-color)", background: "var(--main-bg)" }}
+                          style={{
+                            color: "var(--main-color)",
+                            background: "var(--main-bg)",
+                          }}
                         />
                         <button
                           className={`ml-2 px-2 py-1 rounded text-white text-sm ${
@@ -198,11 +214,17 @@ export default function Profile() {
                       {nickname && nickname !== user?.nickname && (
                         <div className="text-sm">
                           {isChecking ? (
-                            <span style={{ color: "var(--count-color)" }}>중복확인 중...</span>
+                            <span style={{ color: "var(--count-color)" }}>
+                              중복확인 중...
+                            </span>
                           ) : (
-                            <span style={{ 
-                              color: nicknameStatus.available ? "#22c55e" : "#ef4444" 
-                            }}>
+                            <span
+                              style={{
+                                color: nicknameStatus.available
+                                  ? "#22c55e"
+                                  : "#ef4444",
+                              }}
+                            >
                               {nicknameStatus.message}
                             </span>
                           )}
@@ -240,7 +262,10 @@ export default function Profile() {
               </div>
               <div
                 className="text-base mt-2 cursor-pointer select-all transition-colors duration-150 rounded px-2 py-1 inline-block"
-                style={{ color: "var(--count-color)", background: "transparent" }}
+                style={{
+                  color: "var(--count-color)",
+                  background: "transparent",
+                }}
                 title="클릭하면 UID가 복사됩니다"
                 onClick={() => {
                   navigator.clipboard.writeText(user?.uid || "");
@@ -252,7 +277,9 @@ export default function Profile() {
           </div>
           {/* 연동 정보 */}
           <div className="flex items-center justify-center gap-2 mt-4">
-            <span style={{ color: "var(--main-color)" }}>Linked with Google</span>
+            <span style={{ color: "var(--main-color)" }}>
+              Linked with Google
+            </span>
             {user?.googleId ? (
               // 체크 아이콘 (연동됨)
               <svg
@@ -265,13 +292,20 @@ export default function Profile() {
                 strokeWidth="2"
                 style={{ color: "#22c55e" }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             ) : (
               // 연동 추가 아이콘 (연동 안됨)
-              <button className="google-link-button cursor-pointer" onClick={async () => {
-                loginWithGoogle();
-              }}>
+              <button
+                className="google-link-button cursor-pointer"
+                onClick={async () => {
+                  loginWithGoogle();
+                }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -294,48 +328,103 @@ export default function Profile() {
           {/* Game History */}
           <div
             className="mt-8 px-6 rounded-lg p-4"
-            style={{ background: "var(--main-board-bg)", color: "var(--main-color)" }}
+            style={{
+              background: "var(--main-board-bg)",
+              color: "var(--main-color)",
+            }}
           >
-            <h2 className="font-bold text-lg mb-4" style={{ color: "var(--main-color)" }}>
+            <h2
+              className="font-bold text-lg mb-4"
+              style={{ color: "var(--main-color)" }}
+            >
               Game History
             </h2>
-            {user1.history.slice(0, 3).map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between rounded-xl py-3 border-b p-6 mb-2"
-                style={{ background: "var(--modal-bg)", color: "var(--main-color)" }}
-              >
-                <div>
-                  <div className="font-medium text-base">{item.puzzle}</div>
-                  <div style={{ color: "var(--count-color)" }}>{item.date}</div>
+            {!user.googleId ? (
+              <>
+                <div className="mb-4 text-center">
+                  <div className="text-base font-bold text-blue-600 mb-2">
+                    <span className="px-2 py-1 rounded">
+                      구글 연동 시 <span className="underline decoration-wavy decoration-pink-500">게임 기록</span>이 저장됩니다!
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 italic">
+                    먼저 게임을 플레이하여 기록을 만들어보세요!
+                  </div>
                 </div>
-                <button
-                  className="rounded-full px-4 py-1 text-sm font-medium shadow"
-                  style={{
-                    background: "var(--btn-default)",
-                    color: "#fff",
-                  }}
-                >
-                  See More
-                </button>
-              </div>
-            ))}
-            {user1.history.length > 3 && (
-              <div className="flex justify-center mt-4">
-                <button
-                  className="rounded-full px-4 py-1 text-sm font-medium shadow"
-                  style={{
-                    background: "var(--btn-default)",
-                    color: "#fff",
-                  }}
-                >
-                  See More history
-                </button>
-              </div>
+              </>
+            ) : !userHistory ? (
+              <>
+                <div className="mb-4 text-center">
+                  <div className="text-base font-bold text-blue-600 mb-2">
+                    <span className="px-2 py-1 rounded">
+                      아직 게임 기록이 없습니다!
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 italic">
+                    먼저 게임을 플레이하여 기록을 만들어보세요!
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 표시할 히스토리 개수 결정 */}
+                {userHistory
+                  .slice(0, showAllHistory ? userHistory.length : 3)
+                  .map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between rounded-xl py-3 border-b p-6 mb-2"
+                      style={{
+                        background: "var(--modal-bg)",
+                        color: "var(--main-color)",
+                      }}
+                    >
+                      <div>
+                        <div className="font-medium text-base">
+                          이동 횟수 : {item.score} 회
+                        </div>
+                        <div style={{ color: "var(--count-color)" }}>
+                          {item.playDate.split("T")[0] +
+                            " " +
+                            item.playDate.split("T")[1].split(".")[0]}
+                        </div>
+                      </div>
+                      <button
+                        className="rounded-full px-4 py-1 text-sm font-medium shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{
+                          background: "var(--btn-default)",
+                          color: "#fff",
+                        }}
+                        disabled={true}
+                      >
+                        See More
+                      </button>
+                    </div>
+                  ))}
+                
+                {/* 버튼 영역 */}
+                {userHistory.length > 3 && (
+                  <div className="flex justify-center mt-4">
+                    <button
+                      className="rounded-full px-4 py-1 text-sm font-medium shadow cursor-pointer"
+                      style={{
+                        background: "var(--btn-default)",
+                        color: "#fff",
+                      }}
+                      onClick={() => {
+                        setShowAllHistory(!showAllHistory);
+                      }}
+                    >
+                      {showAllHistory ? "Show Less" : "See More history"}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
       </div>
+      <Loading isLoading={isLoading || loading} />
     </>
   );
 }

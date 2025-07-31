@@ -18,11 +18,7 @@ export function useGameRecord() {
       }
 
       const result = await saveGameRecord(token, record);
-      if (result) {
-        return result;
-      } else {
-        return false;
-      }
+      return result;
     } catch (err) {
       setError(err.message);
       return false;
@@ -60,6 +56,6 @@ export function useGameRecord() {
     saveRecord,
     getRecords,
     loading,
-    error,
+    recordError: error,
   };
 }

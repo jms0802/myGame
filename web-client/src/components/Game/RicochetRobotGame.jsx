@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import "./RicochetRobotGame.css";
 import { useDarkMode } from "../../contexts/DarkModeContext";
 import { useGameRecord } from "../../hooks/useGameRecord";
+import Loading from "../Loading";
 
 const BOARD_SIZE = 10;
 const WALL_TYPES = {
@@ -171,11 +172,10 @@ const RicochetRobotGame = () => {
   const [prevRobots, setPrevRobots] = useState(initialRobots);
   const [highlightedCells, setHighlightedCells] = useState([]);
   const [showClearMessage, setShowClearMessage] = useState(false);
-  const [clearMoveCount, setClearMoveCount] = useState(0);
   const { dark } = useDarkMode();
   const [showHelp, setShowHelp] = useState(false);
 
-  const { saveRecord, loading } = useGameRecord();
+  const { saveRecord, loading, recordError } = useGameRecord();
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
   const calculateHighlightedCells = useCallback(
@@ -499,12 +499,11 @@ const RicochetRobotGame = () => {
 
   // 게임 기록 저장
   const handleSaveGameRecord = async () => {
-    setClearMoveCount(moveCount + 1); // 현재 무브 카운트 저장
     setSelectedRobot(null);
     setHighlightedCells([]);
 
     const record = {
-      score: moveCount,
+      score: moveCount + 1,
       playDate: new Date(),
       isPublic: false,
       stageData: {
@@ -517,7 +516,7 @@ const RicochetRobotGame = () => {
     try {
       await saveRecord(record);
     } catch (error) {
-      console.error("저장 실패:", error);
+      console.error("저장 실패:", recordError);
     } finally {
       setMoveCount(0); // 무브 카운트 즉시 초기화
     }
@@ -784,7 +783,7 @@ const RicochetRobotGame = () => {
           <div className="clear-message">
             <h2>클리어!</h2>
             <p>
-              이동 횟수: <span className="count">{clearMoveCount}</span>
+              이동 횟수: <span className="count">{moveCount+1}</span>
             </p>
           </div>
         )}
@@ -802,33 +801,7 @@ const RicochetRobotGame = () => {
             position: "relative",
           }}
         >
-          {loading && (
-            <div className="game-loading absolute inset-0 z-20 flex items-center justify-center bg-black/50">
-              <div className="game-loading-spinner mb-2">
-                <svg
-                  className="animate-spin h-8 w-8 text-gray-700"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  aria-label="로딩 중"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="white"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="white"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  />
-                </svg>
-              </div>
-            </div>
-          )}
+          <Loading isLoading={loading} />
           {Array(BOARD_SIZE)
             .fill(null)
             .map((_, y) =>
