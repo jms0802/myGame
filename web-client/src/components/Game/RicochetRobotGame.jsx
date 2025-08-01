@@ -504,7 +504,7 @@ const RicochetRobotGame = () => {
     setHighlightedCells([]);
 
     const record = {
-      score: moveCount,
+      score: moveCount === 0 ? 1 : moveCount,
       isPublic: false,
       stageData: {
         robots: robots,
@@ -514,8 +514,8 @@ const RicochetRobotGame = () => {
     };
 
     const result = await saveRecord(record);
-    if (!result) {
-      console.error("저장 실패");
+    if (!result.success) {
+      console.error("게임 기록 저장 실패", result.message);
     }
   };
 

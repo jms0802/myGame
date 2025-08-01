@@ -1,7 +1,8 @@
 export default function Loading({ isLoading, zIndex = 70 }) {
   return (
     isLoading && (
-    <div className={`absolute inset-0 z-[${zIndex}] flex items-center justify-center rounded-xl bg-black/50`}>
+    <div className={`absolute inset-0 flex items-center justify-center rounded-xl bg-black/50`}
+    style={{ zIndex: zIndex }}>
       <svg
         className="animate-spin h-8 w-8 text-gray-700"
         xmlns="http://www.w3.org/2000/svg"

@@ -9,10 +9,7 @@ export async function saveGameRecord(token, record) {
     },
     body: JSON.stringify(record),
   });
-  if (response.ok) {
-    return await response.json();
-  }
-  return null;
+  return await response.json();
 }
 
 export async function fetchGameRecord(token, record) {
