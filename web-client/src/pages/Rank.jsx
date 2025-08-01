@@ -133,7 +133,15 @@ export default function Rank() {
       });
       setRank(rankedData);
       const myRank = rankedData.find((rank) => rank.uid === user.uid);
-      setMyRank(myRank);
+      if (myRank) {
+        setMyRank(myRank);
+      } else {
+        setMyRank({
+          rank: "-",
+          nickname: user.nickname,
+          playCount: 0,
+        });
+      }
     } catch (error) {
       console.error("Rank 데이터 가져오기 실패:", error);
     } finally {
@@ -193,7 +201,7 @@ export default function Rank() {
                 />
                 <div>
                   <div
-                    className="font-medium"
+                    className="font-bold"
                     style={{ color: "var(--main-color)" }}
                   >
                     {myRank.nickname}
@@ -213,7 +221,7 @@ export default function Rank() {
                 className="font-bold text-base mb-2"
                 style={{ color: "var(--main-color)" }}
               >
-                Rankings {showAll ? rank.length : "10 / "+rank.length}
+                Rankings {showAll ? rank.length : rank.length > 10 ? "10 / "+rank.length : rank.length}
               </h2>
               <ul className="space-y-3">
                 {visibleRanks.map((rank) => (
@@ -235,7 +243,7 @@ export default function Rank() {
                     />
                     <div>
                       <div
-                        className="font-medium"
+                        className="font-bold"
                         style={{ color: "var(--main-color)" }}
                       >
                         {rank.nickname}
@@ -250,16 +258,16 @@ export default function Rank() {
                   </li>
                 ))}
               </ul>
-              {!showAll && rank.length > 10 && (
+              {rank.length > 10 && (
                 <button
                   className="mt-4 w-full py-2 rounded font-semibold transition cursor-pointer"
                   style={{
                     background: "var(--btn-default)",
                     color: "#fff",
                   }}
-                  onClick={() => setShowAll(true)}
+                  onClick={() => setShowAll(!showAll)}
                 >
-                  더보기
+                  {showAll ? "간략히" : "더보기"}
                 </button>
               )}
             </div>

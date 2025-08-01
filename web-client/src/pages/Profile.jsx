@@ -359,7 +359,9 @@ export default function Profile() {
               className="font-bold text-lg mb-4"
               style={{ color: "var(--main-color)" }}
             >
-              Game History {showAllHistory ? userHistory.length : "3 / "+userHistory.length}
+              Game History {(!user.googleId || !userHistory) ? "" 
+              : showAllHistory ? userHistory.length 
+              : userHistory.length > 3 ? "3 / "+userHistory.length : ""}
             </h2>
             {recordLoading && <Loading isLoading={recordLoading} />}
             {!user.googleId ? (
