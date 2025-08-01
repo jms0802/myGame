@@ -213,7 +213,7 @@ export default function Rank() {
                 className="font-bold text-base mb-2"
                 style={{ color: "var(--main-color)" }}
               >
-                Top 100
+                Rankings {showAll ? rank.length : "10 / "+rank.length}
               </h2>
               <ul className="space-y-3">
                 {visibleRanks.map((rank) => (

@@ -359,7 +359,7 @@ export default function Profile() {
               className="font-bold text-lg mb-4"
               style={{ color: "var(--main-color)" }}
             >
-              Game History
+              Game History {showAllHistory ? userHistory.length : "3 / "+userHistory.length}
             </h2>
             {recordLoading && <Loading isLoading={recordLoading} />}
             {!user.googleId ? (
@@ -430,7 +430,7 @@ export default function Profile() {
                         }}
                         disabled={true}
                       >
-                        See More
+                        상세보기
                       </button>
                     </div>
                   ))}
@@ -447,7 +447,7 @@ export default function Profile() {
                         setShowAllHistory(!showAllHistory);
                       }}
                     >
-                      {showAllHistory ? "Show Less" : "See More history"}
+                      {showAllHistory ? "간략히" : "더보기"}
                     </button>
                   </div>
                 )}

@@ -18,7 +18,7 @@ connectDb();
 const allowedOrigins = [
   'http://localhost:5173',         // 개발용
   'https://my-game-roan-dev.vercel.app',
-  'https://my-game-roan.vercel.app',
+  'https://clash-grid.vercel.app',
 ];
 
 

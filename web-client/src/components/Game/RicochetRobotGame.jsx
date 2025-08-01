@@ -504,7 +504,7 @@ const RicochetRobotGame = () => {
     setHighlightedCells([]);
 
     const record = {
-      score: moveCount+1,
+      score: moveCount + 1,
       isPublic: false,
       stageData: {
         robots: robots,
@@ -728,7 +728,7 @@ const RicochetRobotGame = () => {
       <div className="game-container flex flex-col items-center p-4 md:p-8 max-w-screen-md mx-auto">
         <div className="flex items-center justify-between mt-8 mb-10">
           <h1 className="game-title text-2xl font-bold text-center flex-1">
-            리코셰 로봇
+            ClashGrid
           </h1>
           <button
             className="ml-2 rounded-full bg-gray-200 hover:bg-gray-300 text-lg"
