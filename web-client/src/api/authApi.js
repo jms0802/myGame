@@ -68,10 +68,7 @@ export async function updateNickname(uid, nickname) {
       body: JSON.stringify({ uid, nickname }),
     });
     
-    if (response.ok) {
-      return await response.json();
-    }
-    return null;
+    return await response.json();
   } catch (error) {
     console.error("닉네임 변경 실패:", error);
     return null;

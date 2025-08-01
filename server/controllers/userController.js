@@ -37,6 +37,15 @@ exports.updateNickname = asyncHandler(async (req, res) => {
     });
   }
 
+  // 닉네임 중복 체크 (자신 제외)
+  const existingUser = await User.findOne({ nickname, uid: { $ne: uid } });
+  if (existingUser) {
+    return res.status(409).json({
+      success: false,
+      message: "이미 사용 중인 닉네임입니다.",
+    });
+  }
+
   const user = await User.findOne({ uid });
 
   if (!user) {
@@ -92,7 +101,11 @@ exports.checkNickname = asyncHandler(async (req, res) => {
     query.uid = { $ne: uid };
   }
 
+  console.log(query);
+
   const existingUser = await User.findOne(query);
+
+  console.log(!existingUser);
   
   return res.status(200).json({
     success: true,

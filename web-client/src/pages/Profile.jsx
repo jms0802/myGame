@@ -8,7 +8,7 @@ import Loading from "../components/Loading";
 
 export default function Profile() {
   const { user, editNickname, isLoading } = useAuth();
-  const { getRecords, loading } = useGameRecord();
+  const { getRecords } = useGameRecord();
   const { loginWithGoogle } = useGoogleLogin();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
@@ -18,14 +18,17 @@ export default function Profile() {
     available: true,
     message: "",
   });
-  const [isChecking, setIsChecking] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   const [userHistory, setUserHistory] = useState([]);
+  const [recordLoading, setRecordLoading] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false); // 추가
 
   useEffect(() => {
     const fetchUserHistory = async () => {
+      setRecordLoading(true);
       const history = await getRecords();
       setUserHistory(history.records);
+      setRecordLoading(false);
     };
     fetchUserHistory();
   }, [getRecords]);
@@ -44,12 +47,14 @@ export default function Profile() {
 
   // 닉네임 중복확인 함수
   const checkNicknameAvailability = async (nickname) => {
-    if (!nickname.trim() || nickname === user?.nickname) {
+    if (
+      !nickname.trim() ||
+      nickname === user?.nickname
+    ) {
       setNicknameStatus({ available: true, message: "" });
       return;
     }
 
-    setIsChecking(true);
     try {
       const result = await checkNickname(nickname, user?.uid);
       if (result) {
@@ -78,13 +83,20 @@ export default function Profile() {
   const handleNicknameChange = (e) => {
     const value = e.target.value;
     if (value.length > 15) {
-      alert("닉네임은 15글자 이하로 입력해주세요.");
+      setNicknameStatus({ available: false, message: "닉네임은 15글자 이하로 입력해주세요." });
       setNickname(value.slice(0, 15));
     } else {
       setNickname(value);
       // 디바운스: 500ms 후 중복확인 실행
       clearTimeout(window.nicknameCheckTimeout);
       window.nicknameCheckTimeout = setTimeout(() => {
+        setIsChecking(true);
+
+        if (value.length < 2 || value === "") {
+          setNicknameStatus({ available: false, message: "닉네임은 2글자 이상으로 입력해주세요." });
+          return;
+        }
+
         checkNicknameAvailability(value);
       }, 500);
     }
@@ -92,14 +104,19 @@ export default function Profile() {
 
   // 닉네임 저장
   const handleNicknameSave = async () => {
-    if (!nickname.trim() || nickname === user?.nickname) {
+    if (!nickname || nickname === user?.nickname) {
       setEditing(false);
+      setNickname(user?.nickname);
       return;
     }
 
     // 중복확인 결과가 없거나 사용 불가능한 경우
-    if (!nicknameStatus.available) {
-      alert("사용할 수 없는 닉네임입니다.");
+    if (
+      !nicknameStatus.available ||
+      nickname.length < 2 ||
+      nickname.length > 15
+    ) {
+      setNicknameStatus({ available: false, message: "사용할 수 없는 닉네임입니다." });
       return;
     }
 
@@ -111,6 +128,7 @@ export default function Profile() {
         setEditing(false);
         setNicknameStatus({ available: true, message: "" });
       } else {
+        setIsUpdating(true);
         alert(result.message);
         setNickname(user?.nickname || "");
       }
@@ -126,16 +144,11 @@ export default function Profile() {
   const handleNicknameKeyDown = (e) => {
     if (e.key === "Enter") handleNicknameSave();
     if (e.key === "Escape") {
-      setNickname(user?.nickname || "");
+      setNickname(user?.nickname);
       setEditing(false);
       setNicknameStatus({ available: true, message: "" });
     }
   };
-
-  // 로딩 중이거나 유저 정보가 없으면 로딩 표시
-  if (isLoading || !user?.uid) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <>
@@ -189,19 +202,25 @@ export default function Profile() {
                         />
                         <button
                           className={`ml-2 px-2 py-1 rounded text-white text-sm ${
-                            isUpdating || !nicknameStatus.available
+                            isUpdating ||
+                            !nicknameStatus.available ||
+                            isChecking || !user?.nickname
                               ? "bg-gray-400"
                               : "bg-blue-500"
                           }`}
                           onClick={handleNicknameSave}
-                          disabled={isUpdating || !nicknameStatus.available}
+                          disabled={
+                            isUpdating ||
+                            !nicknameStatus.available ||
+                            isChecking || !user?.nickname
+                          }
                         >
                           {isUpdating ? "변경 중..." : "확인"}
                         </button>
                         <button
                           className="ml-1 px-2 py-1 rounded bg-gray-300 text-gray-700 text-sm"
                           onClick={() => {
-                            setNickname(user?.nickname || "");
+                            setNickname(user?.nickname);
                             setEditing(false);
                             setNicknameStatus({ available: true, message: "" });
                           }}
@@ -211,11 +230,11 @@ export default function Profile() {
                         </button>
                       </div>
                       {/* 중복확인 상태 표시 */}
-                      {nickname && nickname !== user?.nickname && (
+                      {nickname !== user?.nickname && (
                         <div className="text-sm">
                           {isChecking ? (
                             <span style={{ color: "var(--count-color)" }}>
-                              중복확인 중...
+                              {nicknameStatus.message || "중복확인 중..."}
                             </span>
                           ) : (
                             <span
@@ -237,7 +256,10 @@ export default function Profile() {
                     <span className="user-nickname">{user?.nickname}</span>
                     <button
                       className="edit-nickname cursor-pointer"
-                      onClick={() => setEditing(true)}
+                      onClick={() => {
+                        setEditing(true);
+                        setNicknameStatus({ available: false, message: "" });
+                      }}
                       title="닉네임 수정"
                     >
                       <svg
@@ -327,7 +349,7 @@ export default function Profile() {
           </div>
           {/* Game History */}
           <div
-            className="mt-8 px-6 rounded-lg p-4"
+            className="mt-8 px-6 rounded-lg p-4 relative"
             style={{
               background: "var(--main-board-bg)",
               color: "var(--main-color)",
@@ -339,12 +361,17 @@ export default function Profile() {
             >
               Game History
             </h2>
+            {recordLoading && <Loading isLoading={recordLoading} />}
             {!user.googleId ? (
               <>
                 <div className="mb-4 text-center">
                   <div className="text-base font-bold text-blue-600 mb-2">
                     <span className="px-2 py-1 rounded">
-                      구글 연동 시 <span className="underline decoration-wavy decoration-pink-500">게임 기록</span>이 저장됩니다!
+                      구글 연동 시{" "}
+                      <span className="underline decoration-wavy decoration-pink-500">
+                        게임 기록
+                      </span>
+                      이 저장됩니다!
                     </span>
                   </div>
                   <div className="text-sm text-gray-600 italic">
@@ -367,7 +394,6 @@ export default function Profile() {
               </>
             ) : (
               <>
-                {/* 표시할 히스토리 개수 결정 */}
                 {userHistory
                   .slice(0, showAllHistory ? userHistory.length : 3)
                   .map((item, idx) => (
@@ -408,7 +434,6 @@ export default function Profile() {
                       </button>
                     </div>
                   ))}
-                
                 {/* 버튼 영역 */}
                 {userHistory.length > 3 && (
                   <div className="flex justify-center mt-4">
@@ -431,7 +456,7 @@ export default function Profile() {
           </div>
         </div>
       </div>
-      <Loading isLoading={isLoading || loading} />
+      <Loading isLoading={isLoading} />
     </>
   );
 }

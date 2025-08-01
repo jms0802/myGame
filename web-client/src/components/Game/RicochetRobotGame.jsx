@@ -504,7 +504,7 @@ const RicochetRobotGame = () => {
     setHighlightedCells([]);
 
     const record = {
-      score: moveCount === 0 ? 1 : moveCount,
+      score: moveCount+1,
       isPublic: false,
       stageData: {
         robots: robots,
