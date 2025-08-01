@@ -6,8 +6,8 @@ const asyncHandler = require("express-async-handler");
 exports.saveGameRecord = asyncHandler(async (req, res) => {
   const user = req.user;
   const uid = user.uid;
-  const { score, playDate, isPublic, stageData } = req.body;
-  if (!score || !playDate || !stageData) {
+  const { score, isPublic, stageData } = req.body;
+  if (!score || !stageData) {
     return res
       .status(400)
       .json({ success: false, message: "필수 필드가 누락되었습니다.", record: req.body });
@@ -16,7 +16,7 @@ exports.saveGameRecord = asyncHandler(async (req, res) => {
   const record = new GameRecord({
     uid,
     score,
-    playDate: playDate || new Date(),
+    playDate: new Date(),
     isPublic,
     stageData,
   });

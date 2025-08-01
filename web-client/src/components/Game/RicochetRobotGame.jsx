@@ -503,8 +503,7 @@ const RicochetRobotGame = () => {
     setHighlightedCells([]);
 
     const record = {
-      score: moveCount + 1,
-      playDate: new Date(),
+      score: moveCount,
       isPublic: false,
       stageData: {
         robots: robots,
@@ -518,7 +517,9 @@ const RicochetRobotGame = () => {
     } catch (error) {
       console.error("저장 실패:", recordError);
     } finally {
-      setMoveCount(0); // 무브 카운트 즉시 초기화
+      setTimeout(() => {
+        setMoveCount(0); // 무브 카운트 즉시 초기화
+      }, 1000);
     }
   };
 
@@ -783,7 +784,7 @@ const RicochetRobotGame = () => {
           <div className="clear-message">
             <h2>클리어!</h2>
             <p>
-              이동 횟수: <span className="count">{moveCount+1}</span>
+              이동 횟수: <span className="count">{moveCount}</span>
             </p>
           </div>
         )}

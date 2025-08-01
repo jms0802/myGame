@@ -384,9 +384,16 @@ export default function Profile() {
                           이동 횟수 : {item.score} 회
                         </div>
                         <div style={{ color: "var(--count-color)" }}>
-                          {item.playDate.split("T")[0] +
-                            " " +
-                            item.playDate.split("T")[1].split(".")[0]}
+                          {(() => {
+                            const date = new Date(item.playDate);
+                            const formattedDate = date.toLocaleString("ko-KR", {
+                              timeZone: "Asia/Seoul",
+                              dateStyle: "short",
+                              timeStyle: "medium",
+                              hour12: false,
+                            });
+                            return formattedDate;
+                          })()}
                         </div>
                       </div>
                       <button
