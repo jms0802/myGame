@@ -1,74 +1,44 @@
-/* 다크모드 */
-.dark-light-toggle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  position: relative;
-  width: 50px;
-  height: 50px;
-  background-color: var(--btn-default);
-  border: none;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-
-  transition: background-color 0.5s;
+:root[color-theme='light'] {
+  --main-bg: #fff;
+  --main-board-bg: #dbdbdb;
+  --main-color: #222;
+  --btn-default: #007bff;
+  --btn-hover: #0056b3;
+  --border-color: #333;
+  --modal-bg: #fff;
+  --modal-color: #222;
+  --robot-selected: #000;
+  --robot-active: #000;
+  --target-bg: #ef4444;
+  --target-border: #fff;
+  --game-board-bg: #fff;
+  --game-board-border: #333;
+  --instructions-color: #666;
+  --count-color: #2563eb;
+}
+:root[color-theme='dark'] {
+  --main-bg: #181818;
+  --main-board-bg: #282828;
+  --main-color: #eee;
+  --btn-default: #2563eb;
+  --btn-hover: #60a5fa;
+  --border-color: #404040;
+  --modal-bg: #282828;
+  --modal-color: #eee;
+  --robot-selected: #e0e0e0;
+  --robot-active: #e0e0e0;
+  --target-bg: #ef4444;
+  --target-border: #222;
+  --game-board-bg: #2d2d2d;
+  --game-board-border: #404040;
+  --instructions-color: #b0b0b0;
+  --count-color: #60a5fa;
 }
 
-.icon30 {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 30px;
-  height: 30px;
-  position: absolute;
-  transition: transform 0.5s ease-in-out;
-}
-
-.icon30>svg {
-  transition: fill 0.5s, transform 0.5s ease;
-}
-
-.sun {
-  animation: rise-animation 1s forwards;
-  transform-origin: 50% 200%
-}
-
-.moon {
-  animation: set-animation 1s forwards;
-  transform-origin: 50% 200%;
-}
-
-:root[color-theme='dark'] .dark-light-toggle .sun {
-  animation: set-animation 1s forwards;
-}
-
-:root[color-theme='dark'] .dark-light-toggle .moon {
-  animation: rise-animation 1s forwards;
-}
-
-.dark-light-toggle:hover svg {
-  /* fill: var(--btn-svg-hover); */
-  transform: scale(1.2);
-}
-
-@keyframes rise-animation {
-  from {
-    transform: rotate(180deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes set-animation {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(180deg);
-  }
-}
+/* 
+  아래 글로벌 스타일은 Tailwind className으로 대체하므로 삭제/주석 처리
+  (필요시 Tailwind에서 직접 className으로 적용)
+*/
+/*
+body, h1, button, a, ... 
+*/
