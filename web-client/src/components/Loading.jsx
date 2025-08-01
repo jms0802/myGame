@@ -1,7 +1,7 @@
-export default function Loading({ isLoading }) {
+export default function Loading({ isLoading, zIndex = 70 }) {
   return (
     isLoading && (
-    <div className="absolute inset-0 z-[70] flex items-center justify-center rounded-xl bg-black/50">
+    <div className={`absolute inset-0 z-[${zIndex}] flex items-center justify-center rounded-xl bg-black/50`}>
       <svg
         className="animate-spin h-8 w-8 text-gray-700"
         xmlns="http://www.w3.org/2000/svg"

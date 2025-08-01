@@ -29,3 +29,14 @@ export async function fetchGameRecord(token, record) {
   }
   return null;
 }
+
+export async function getRank() {
+  const response = await fetch(`${API_URL}/api/rank`, {
+    method: "GET",
+  });
+  if (response.ok) {
+    const data = await response.json();
+    return data.rank;
+  }
+  return null;
+}

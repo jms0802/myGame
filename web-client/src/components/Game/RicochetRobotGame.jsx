@@ -175,7 +175,7 @@ const RicochetRobotGame = () => {
   const { dark } = useDarkMode();
   const [showHelp, setShowHelp] = useState(false);
 
-  const { saveRecord, loading, recordError } = useGameRecord();
+  const { saveRecord, recordLoading, recordError } = useGameRecord();
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
   const calculateHighlightedCells = useCallback(
@@ -427,6 +427,7 @@ const RicochetRobotGame = () => {
           setShowClearMessage(true);
           setTimeout(() => {
             setShowClearMessage(false);
+            setMoveCount(0);
           }, 2000);
 
           handleSaveGameRecord();
@@ -512,14 +513,9 @@ const RicochetRobotGame = () => {
       },
     };
 
-    try {
-      await saveRecord(record);
-    } catch (error) {
-      console.error("저장 실패:", recordError);
-    } finally {
-      setTimeout(() => {
-        setMoveCount(0); // 무브 카운트 즉시 초기화
-      }, 1000);
+    const result = await saveRecord(record);
+    if (!result) {
+      console.error("저장 실패");
     }
   };
 
@@ -802,7 +798,7 @@ const RicochetRobotGame = () => {
             position: "relative",
           }}
         >
-          <Loading isLoading={loading} />
+          <Loading isLoading={recordLoading} zIndex={30} />
           {Array(BOARD_SIZE)
             .fill(null)
             .map((_, y) =>

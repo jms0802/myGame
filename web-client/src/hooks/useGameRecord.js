@@ -55,7 +55,7 @@ export function useGameRecord() {
   return {
     saveRecord,
     getRecords,
-    loading,
+    recordLoading: loading,
     recordError: error,
   };
 }
