@@ -27,30 +27,26 @@
 
 ### 2. 🗂️ ERD 설계
 
-![ERD Diagram](ERD.drawio)
+<img width="361" height="431" alt="Image" src="https://github.com/user-attachments/assets/7710895e-1b7a-410f-920d-c00ec4cd2117" />
 
 | 모델 | 필드 | 속성 | 설명 |
 | --- | --- | --- | --- |
-| User | _id | ObjectId | 사용자 고유 ID |
-|  | uid | String, required, unique | 사용자 식별자 |
+| User | uid | String, required, unique | 사용자 고유 ID |
 |  | password | String | 해시 암호화된 비밀번호 |
 |  | email | String | 이메일 주소 |
 |  | googleId | String | Google OAuth ID |
 |  | nickname | String | 사용자 닉네임 |
 |  | createdAt | Date, default: Date.now | 계정 생성일 |
-| GameRecord | _id | ObjectId | 게임 기록 고유 ID |
-|  | uid | String, required | 사용자 식별자 |
+| GameRecord | uid | String, required | 사용자 고유 ID |
 |  | score | Number | 게임 점수 |
 |  | playDate | Date | 플레이 날짜 |
 |  | isPublic | Boolean, default: false | 공개 여부 |
 |  | stageData | Object | 스테이지 데이터 (JSON) |
-| Rank | _id | ObjectId | 랭킹 고유 ID |
-|  | uid | String, required, unique | 사용자 식별자 |
+| Rank | uid | String, required, unique | 사용자 고유 ID |
 |  | nickname | String | 사용자 닉네임 |
 |  | playCount | Number | 플레이 횟수 |
 |  | updatedAt | Date | 업데이트 날짜 |
-| UserRecord | _id | ObjectId | 사용자 통계 고유 ID |
-|  | uid | String, required, unique | 사용자 식별자 |
+| UserRecord | uid | String, required, unique | 사용자 고유 ID |
 |  | gameCount | Number | 총 게임 수 |
 |  | avgScore | Number | 평균 점수 |
 |  | maxScore | Number | 최고 점수 |
@@ -161,7 +157,6 @@ myGame/
 
 - **JWT 기반 인증**: 안전한 사용자 세션 관리
 - **Google OAuth 2.0**: 소셜 로그인 지원
-- **반응형 디자인**: TailwindCSS로 모바일/데스크톱 대응
 - **다크모드**: 사용자 선호도 기반 테마 전환
 - **CORS 설정**: 개발/프로덕션 환경별 도메인 허용
 - **에러 핸들링**: Express async-handler로 비동기 에러 처리
@@ -179,9 +174,10 @@ myGame/
 
 ### 9. 📌 향후 개선 계획
 
-- [ ] 게임 난이도 조절 기능
+- [ ] 이전 게임 상세보기 (스테이지 정보, 시간, 시도 횟수 등)
+- [ ] 관리자 전용 페이지 (사용자 통계)
 - [ ] 커스텀 스테이지 생성/공유
+- [ ] 보안 강화
 - [ ] 실시간 멀티플레이어 지원
-- [ ] 게임 리플레이 기능
-- [ ] 성취 시스템 (업적, 배지)
-- [ ] 모바일 앱 버전 개발
+- [ ] 게임 모드 추가 (무한 모드, 로그라이크 모드 등)
+- [ ] 모바일 앱 버전 개발 (리액트 네이티브 or 게임 엔진을 이용한 개발)
