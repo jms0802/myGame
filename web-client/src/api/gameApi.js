@@ -1,7 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 export async function saveGameRecord(token, record) {
-  const response = await fetch(`${API_URL}/api/game-record`, {
+  const response = await fetch(`${API_URL}/api/game-records`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -9,31 +9,24 @@ export async function saveGameRecord(token, record) {
     },
     body: JSON.stringify(record),
   });
-  return await response.json();
+  return [ response.status, await response.json() ]
 }
 
-export async function fetchGameRecord(token, record) {
-  const response = await fetch(`${API_URL}/api/game-record`, {
+export async function fetchGameRecord(token, record_id) {
+  const response = await fetch(`${API_URL}/api/game-records`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(record),
+    body: JSON.stringify(record_id),
   });
-  if (response.ok) {
-    return await response.json();
-  }
-  return null;
+  return [ response.status, await response.json() ]
 }
 
 export async function getRank() {
-  const response = await fetch(`${API_URL}/api/rank`, {
+  const response = await fetch(`${API_URL}/api/ranks`, {
     method: "GET",
   });
-  if (response.ok) {
-    const data = await response.json();
-    return data.rank;
-  }
-  return null;
+  return [ response.status, await response.json() ]
 }

@@ -58,9 +58,10 @@ export const AuthProvider = ({ children }) => {
     const initializeAuth = async () => {
       try {
         const token = getAuthCookie();
-        const userInfo = await fetchUserInfo(token);
-        if (userInfo) {
-          setUser(userInfo.user);
+        const [status, data] = await fetchUserInfo(token);
+        if (status >= 200 && status < 300) {
+          setUser(data.user);
+          return;
         }
 
         // 로컬 스토리지에서 게스트 사용자 정보 확인
@@ -71,6 +72,7 @@ export const AuthProvider = ({ children }) => {
             uid: storedUID,
             nickname: storedNickname,
           }));
+          return;
         }
       } catch (error) {
         console.error("Auth initialization error:", error);

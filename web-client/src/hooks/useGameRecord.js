@@ -4,48 +4,47 @@ import { getAuthCookie } from "../utils/storage";
 
 export function useGameRecord() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const saveRecord = useCallback(async (record) => {
     setLoading(true);
-    setError(null);
 
     try {
       const token = getAuthCookie();
+      if (!token) return false;
 
-      if (!token) {
+      const [status, data] = await saveGameRecord(token, record);
+      
+      if (status >= 200 && status < 300) {
+        return true;
+      } else {
+        console.error('API 에러:', status, data.message);
         return false;
       }
-
-      const result = await saveGameRecord(token, record);
-      return result;
     } catch (err) {
-      setError(err.message);
+      console.error('네트워크/기타 에러:', err);
       return false;
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 2000);
+      setTimeout(() => setLoading(false), 2000);
     }
   }, []);
 
   const getRecords = useCallback(async () => {
     setLoading(true);
-    setError(null);
 
     try {
       const token = getAuthCookie();
       if (!token) {
         return false;
       }
-      const result = await fetchGameRecord(token);
-      if (result) {
-        return result;
+      const [status, data] = await fetchGameRecord(token);
+      if (status >= 200 && status < 300) {
+        return data;
       } else {
+        console.error('API 에러:', status, data.message);
         return false;
       }
     } catch (err) {
-      setError(err.message);
+      console.error(err);
       return false;
     } finally {
       setLoading(false);
@@ -56,6 +55,5 @@ export function useGameRecord() {
     saveRecord,
     getRecords,
     recordLoading: loading,
-    recordError: error,
   };
 }

@@ -175,7 +175,7 @@ const RicochetRobotGame = () => {
   const { dark } = useDarkMode();
   const [showHelp, setShowHelp] = useState(false);
 
-  const { saveRecord, recordLoading, recordError } = useGameRecord();
+  const { saveRecord, recordLoading } = useGameRecord();
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
   const calculateHighlightedCells = useCallback(
@@ -513,10 +513,8 @@ const RicochetRobotGame = () => {
       },
     };
 
-    const result = await saveRecord(record);
-    if (!result.success) {
-      console.error("게임 기록 저장 실패", result.message);
-    }
+    await saveRecord(record);
+    
   };
 
   // 로봇 선택 시 하이라이트 계산

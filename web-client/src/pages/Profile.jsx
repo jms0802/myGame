@@ -56,16 +56,16 @@ export default function Profile() {
     }
 
     try {
-      const result = await checkNickname(nickname, user?.uid);
-      if (result) {
+      const [ status, msg ] = await checkNickname(nickname, user?.uid);
+      if (status >= 200 && status < 300) {
         setNicknameStatus({
-          available: result.available,
-          message: result.message,
+          available: true,
+          message: msg.message,
         });
       } else {
         setNicknameStatus({
           available: false,
-          message: "중복확인 중 오류가 발생했습니다.",
+          message: msg.message,
         });
       }
     } catch (error) {
@@ -122,14 +122,14 @@ export default function Profile() {
 
     setIsUpdating(true);
     try {
-      const result = await editNickname(user, nickname);
-      if (result.success) {
-        alert(result.message);
+      const [status, msg] = await editNickname(user, nickname);
+      if (status >= 200 && status < 300) {
+        alert(msg.message);
         setEditing(false);
         setNicknameStatus({ available: true, message: "" });
       } else {
         setIsUpdating(true);
-        alert(result.message);
+        alert(msg.message);
         setNickname(user?.nickname || "");
       }
     } catch (error) {

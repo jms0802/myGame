@@ -14,7 +14,7 @@ export function useGoogleLogin() {
     setIsLoading(true);
 
     const popup = window.open(
-      `${API_URL}/auth/google`,
+      `${API_URL}/api/auth/google`,
       "googleLogin",
       "width=500,height=600"
     );
@@ -38,17 +38,29 @@ export function useGoogleLogin() {
       if (!existUser) {
         const { storedUID } = getLocalUser();
         let newUid = storedUID || nanoid(12);
-        await createUserFromGoogle(newUid, nickname, token);
+        const [status, msg] = await createUserFromGoogle(
+          newUid,
+          nickname,
+          token
+        );
+        if (!(status >= 200 && status < 300))
+          console.error(status, msg.message);
       }
 
-      const userInfo = await fetchUserInfo(token);
-      setUser(userInfo.user);
-      removeLocalUser();
-      setAuthCookie(token);
+      const [status, data] = await fetchUserInfo(token);
 
-      // 성공적으로 로그인 완료 시
-      clearInterval(checkClosed);
-      setIsLoading(false);
+      if (status >= 200 && status < 300) {
+        setUser(data.user);
+        removeLocalUser();
+        setAuthCookie(token);
+        // 성공적으로 로그인 완료 시
+        clearInterval(checkClosed);
+        setIsLoading(false);
+      } else {
+        console.error(data.message);
+        alert(data.message);
+      }
+
       window.removeEventListener("message", messageHandler);
       popup.close(); // 팝업창 닫기
       return true;

@@ -1,15 +1,21 @@
 require("dotenv").config();
 const express = require('express');
-const expressLayouts = require("express-ejs-layouts");
+
 const connectDb = require("./config/db");
+
 const cookieParser = require("cookie-parser");
+
 const cors = require('cors');
 const path = require('path');
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./docs/config');
 
 const passport = require('passport');
 require('./config/passport');
 
 const app = express();
+app.set('trust proxy', 1);
 const port = process.env.PORT || 3001;
 
 connectDb();
@@ -17,7 +23,7 @@ connectDb();
 // CORS 설정
 const allowedOrigins = [
   'http://localhost:5173',         // 개발용
-  'https://my-game-roan-dev.vercel.app',
+  'https://my-game-roan-dev.vercel.app', //Preview
   'https://clash-grid.vercel.app',
 ];
 
@@ -37,11 +43,9 @@ app.use(cors({
 }));
 
 // 미들웨어 설정
-app.use(expressLayouts);
-app.set('view engine', 'ejs');
-app.set("views", "./views");
 app.use(express.static('public'));
 app.use(passport.initialize());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -53,10 +57,10 @@ const userRouter = require('./routes/userRouter');
 const gameRecordRouter = require('./routes/gameRecordRouter');
 const rankRouter = require('./routes/rankRouter');
 
-app.use('/auth', authRouter);
-app.use('/api/user', userRouter);
-app.use('/api/game-record', gameRecordRouter);
-app.use('/api/rank', rankRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/users', userRouter);
+app.use('/api/game-records', gameRecordRouter);
+app.use('/api/ranks', rankRouter);
 
 const server = app.listen(port, () => {
     console.log(`App Listening on port ${port}`);

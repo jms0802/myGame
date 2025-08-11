@@ -114,7 +114,12 @@ export default function Rank() {
 
   const fetchRank = async () => {
     try {
-      const rankData = await getRank();
+      const [status, data] = await getRank();
+      if(!(status >= 200 && status < 300)){
+        console.error(data.message);
+        return;
+      }
+      let rankData = data.rank;
       rankData.push(...mockRankData);
       rankData.sort((a, b) => b.playCount - a.playCount);
 

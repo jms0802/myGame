@@ -5,7 +5,7 @@ const rankSchema = new Schema({
   uid: { type: String, required: true, unique: true },
   nickname: { type: String },
   playCount: { type: Number },
-  updatedAt: { type: Date }
+  updatedAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Rank', rankSchema); 
