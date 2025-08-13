@@ -23,6 +23,12 @@ export default function Profile() {
   const [recordLoading, setRecordLoading] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false); // 추가
 
+  // 상세보기 펼침 상태 (record _id -> boolean)
+  const [expanded, setExpanded] = useState({});
+  const toggleDetails = (id) => {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   useEffect(() => {
     const fetchUserHistory = async () => {
       setRecordLoading(true);
@@ -47,16 +53,13 @@ export default function Profile() {
 
   // 닉네임 중복확인 함수
   const checkNicknameAvailability = async (nickname) => {
-    if (
-      !nickname.trim() ||
-      nickname === user?.nickname
-    ) {
+    if (!nickname.trim() || nickname === user?.nickname) {
       setNicknameStatus({ available: true, message: "" });
       return;
     }
 
     try {
-      const [ status, msg ] = await checkNickname(nickname, user?.uid);
+      const [status, msg] = await checkNickname(nickname, user?.uid);
       if (status >= 200 && status < 300) {
         setNicknameStatus({
           available: true,
@@ -83,7 +86,10 @@ export default function Profile() {
   const handleNicknameChange = (e) => {
     const value = e.target.value;
     if (value.length > 15) {
-      setNicknameStatus({ available: false, message: "닉네임은 15글자 이하로 입력해주세요." });
+      setNicknameStatus({
+        available: false,
+        message: "닉네임은 15글자 이하로 입력해주세요.",
+      });
       setNickname(value.slice(0, 15));
     } else {
       setNickname(value);
@@ -93,7 +99,10 @@ export default function Profile() {
         setIsChecking(true);
 
         if (value.length < 2 || value === "") {
-          setNicknameStatus({ available: false, message: "닉네임은 2글자 이상으로 입력해주세요." });
+          setNicknameStatus({
+            available: false,
+            message: "닉네임은 2글자 이상으로 입력해주세요.",
+          });
           return;
         }
 
@@ -116,7 +125,10 @@ export default function Profile() {
       nickname.length < 2 ||
       nickname.length > 15
     ) {
-      setNicknameStatus({ available: false, message: "사용할 수 없는 닉네임입니다." });
+      setNicknameStatus({
+        available: false,
+        message: "사용할 수 없는 닉네임입니다.",
+      });
       return;
     }
 
@@ -204,7 +216,8 @@ export default function Profile() {
                           className={`ml-2 px-2 py-1 rounded text-white text-sm ${
                             isUpdating ||
                             !nicknameStatus.available ||
-                            isChecking || !user?.nickname
+                            isChecking ||
+                            !user?.nickname
                               ? "bg-gray-400"
                               : "bg-blue-500"
                           }`}
@@ -212,7 +225,8 @@ export default function Profile() {
                           disabled={
                             isUpdating ||
                             !nicknameStatus.available ||
-                            isChecking || !user?.nickname
+                            isChecking ||
+                            !user?.nickname
                           }
                         >
                           {isUpdating ? "변경 중..." : "확인"}
@@ -359,9 +373,14 @@ export default function Profile() {
               className="font-bold text-lg mb-4"
               style={{ color: "var(--main-color)" }}
             >
-              Game History {(!user.googleId || !userHistory) ? "" 
-              : showAllHistory ? userHistory.length 
-              : userHistory.length > 3 ? "3 / "+userHistory.length : ""}
+              Game History{" "}
+              {!user.googleId || !userHistory
+                ? ""
+                : showAllHistory
+                  ? userHistory.length
+                  : userHistory.length > 3
+                    ? "3 / " + userHistory.length
+                    : ""}
             </h2>
             {recordLoading && <Loading isLoading={recordLoading} />}
             {!user.googleId ? (
@@ -401,42 +420,81 @@ export default function Profile() {
                   .map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between rounded-xl py-3 border-b p-6 mb-2"
+                      className="rounded-xl py-3 border-b p-6 mb-2"
                       style={{
                         background: "var(--modal-bg)",
                         color: "var(--main-color)",
                       }}
                     >
-                      <div>
-                        <div className="font-medium text-base">
-                          이동 횟수 : {item.score} 회
+                      <div className="w-full flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-base">
+                            이동 횟수 : {item.score} 회
+                          </div>
+                          <div style={{ color: "var(--count-color)" }}>
+                            {(() => {
+                              const date = new Date(item.playDate);
+                              const formattedDate = date.toLocaleString(
+                                "ko-KR",
+                                {
+                                  timeZone: "Asia/Seoul",
+                                  dateStyle: "short",
+                                  timeStyle: "medium",
+                                  hour12: false,
+                                }
+                              );
+                              return formattedDate;
+                            })()}
+                          </div>
                         </div>
-                        <div style={{ color: "var(--count-color)" }}>
-                          {(() => {
-                            const date = new Date(item.playDate);
-                            const formattedDate = date.toLocaleString("ko-KR", {
-                              timeZone: "Asia/Seoul",
-                              dateStyle: "short",
-                              timeStyle: "medium",
-                              hour12: false,
-                            });
-                            return formattedDate;
-                          })()}
-                        </div>
+                        <button
+                          className="rounded-full px-4 py-1 text-sm font-medium shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{
+                            background: "var(--btn-default)",
+                            color: "#fff",
+                          }}
+                          onClick={() => toggleDetails(item._id)}
+                        >
+                          {expanded[item._id] ? "접기" : "상세보기"}
+                        </button>
                       </div>
-                      <button
-                        className="rounded-full px-4 py-1 text-sm font-medium shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{
-                          background: "var(--btn-default)",
-                          color: "#fff",
-                        }}
-                        disabled={true}
-                      >
-                        상세보기
-                      </button>
+
+                      {expanded[item._id] && (
+                        <div
+                          className="mt-3 pt-3 border-t"
+                          style={{ borderColor: "var(--main-bg)" }}
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {/* <div>
+                              공개 여부: {item.isPublic ? "공개" : "비공개"}
+                            </div> */}
+                            {item.stageData?.target && (
+                              <div>
+                                타겟: {item.stageData.target.color} (
+                                {item.stageData.target.x},{" "}
+                                {item.stageData.target.y})
+                              </div>
+                            )}
+                            {Array.isArray(item.stageData?.robots) &&
+                              item.stageData.robots.length > 0 && (
+                                <div>
+                                  로봇 위치:
+                                  <ul className="mt-1 list-disc pl-5">
+                                    {item.stageData.robots.map((r, i) => (
+                                      <li key={i}>
+                                        {(r.color || r.id) ?? "robot"}: ({r.x},{" "}
+                                        {r.y})
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
-                {/* 버튼 영역 */}
+                {/* 더보기 버툰 */}
                 {userHistory.length > 3 && (
                   <div className="flex justify-center mt-4">
                     <button

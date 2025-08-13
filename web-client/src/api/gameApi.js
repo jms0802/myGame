@@ -12,6 +12,7 @@ export async function saveGameRecord(token, record) {
   return [ response.status, await response.json() ]
 }
 
+// 게임 기록 전체 검색 or 부분 검색
 export async function fetchGameRecord(token, record_id) {
   const response = await fetch(`${API_URL}/api/game-records`, {
     method: "GET",

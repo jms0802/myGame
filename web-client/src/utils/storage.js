@@ -1,5 +1,7 @@
 export function setAuthCookie(token) {
-  document.cookie = `authToken=${token}; path=/;`;
+  // 만료 기간 7일(604800초)로 설정
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `authToken=${token}; expires=${expires}; path=/;`;
 }
 
 export function getAuthCookie() {
