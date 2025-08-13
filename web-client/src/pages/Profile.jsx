@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { checkNickname } from "../api/authApi";
 import { useGameRecord } from "../hooks/useGameRecord";
 import Loading from "../components/Loading";
+import BoardPreview from "../components/Game/BoardPreview";
 
 export default function Profile() {
   const { user, editNickname, isLoading } = useAuth();
@@ -428,10 +429,20 @@ export default function Profile() {
                     >
                       <div className="w-full flex items-center justify-between">
                         <div>
-                          <div className="font-medium text-base">
+                          <div
+                            className="font-bold "
+                            style={{
+                              fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                            }}
+                          >
                             이동 횟수 : {item.score} 회
                           </div>
-                          <div style={{ color: "var(--count-color)" }}>
+                          <div
+                            style={{
+                              color: "var(--count-color)",
+                              fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                            }}
+                          >
                             {(() => {
                               const date = new Date(item.playDate);
                               const formattedDate = date.toLocaleString(
@@ -448,10 +459,11 @@ export default function Profile() {
                           </div>
                         </div>
                         <button
-                          className="rounded-full px-4 py-1 text-sm font-medium shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="rounded-full px-3 py-1 text-sm font-medium shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           style={{
                             background: "var(--btn-default)",
                             color: "#fff",
+                            fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
                           }}
                           onClick={() => toggleDetails(item._id)}
                         >
@@ -461,34 +473,80 @@ export default function Profile() {
 
                       {expanded[item._id] && (
                         <div
-                          className="mt-3 pt-3 border-t"
+                          className="mt-3 border-t"
                           style={{ borderColor: "var(--main-bg)" }}
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {/* <div>
-                              공개 여부: {item.isPublic ? "공개" : "비공개"}
-                            </div> */}
-                            {item.stageData?.target && (
-                              <div>
-                                타겟: {item.stageData.target.color} (
-                                {item.stageData.target.x},{" "}
-                                {item.stageData.target.y})
+                          <div className="flex flex-col md:flex-row justify-evenly items-center gap-4">
+                            <div className="flex flex-row md:flex-col gap-2"
+                              style={{
+                                alignItems: "center",
+                                justifyContent: "center",
+                                textAlign: "center",
+                              }}
+                            >
+                              <div
+                                className="flex items-center gap-1 md:mb-5"
+                                style={{
+                                  fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                                }}
+                              >
+                                보드 정보 복사
+                                <span
+                                  className="cursor-pointer">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="1em"
+                                    height="1em"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    style={{ verticalAlign: "middle" }}
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      await navigator.clipboard.writeText(item._id);
+                                      alert("복사 완료!");
+                                    }}
+                                  >
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                  </svg>
+                                </span>
                               </div>
-                            )}
-                            {Array.isArray(item.stageData?.robots) &&
-                              item.stageData.robots.length > 0 && (
-                                <div>
-                                  로봇 위치:
-                                  <ul className="mt-1 list-disc pl-5">
-                                    {item.stageData.robots.map((r, i) => (
-                                      <li key={i}>
-                                        {(r.color || r.id) ?? "robot"}: ({r.x},{" "}
-                                        {r.y})
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
+                              <div
+                                style={{
+                                  fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                                }}
+                              >
+                                기록 보존 여부
+                              </div>
+                              <label
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  gap: "0.5rem",
+                                  fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={item.isPublic}
+                                  style={{
+                                    accentColor: "var(--btn-default)",
+                                    width: "1.2rem",
+                                    height: "1.2rem",
+                                  }}
+                                />
+                              </label>
+                            </div>
+                            <BoardPreview
+                              board={item.stageData?.board}
+                              robots={item.stageData?.robots}
+                              target={item.stageData?.target}
+                            />
                           </div>
                         </div>
                       )}
