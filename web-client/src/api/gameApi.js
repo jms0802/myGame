@@ -31,3 +31,15 @@ export async function getRank() {
   });
   return [ response.status, await response.json() ]
 }
+
+export async function updateGameRecordPublic(token, id, isPublic) {
+  const response = await fetch(`${API_URL}/api/game-records/${id}/public`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ isPublic }),
+  });
+  return [ response.status, await response.json() ]
+}

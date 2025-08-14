@@ -1,9 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {
-  getGameRecord,
-  saveGameRecord,
-} = require("../controllers/gameController");
+const gameController = require("../controllers/gameController");
 const apiAuth = require("../middleware/apiAuth");
 
 /**
@@ -46,7 +43,7 @@ const apiAuth = require("../middleware/apiAuth");
  *       404:
  *         description: 게임 기록이 없음
  */
-router.get("/", apiAuth, getGameRecord);
+router.get("/", apiAuth, gameController.getGameRecord);
 
 /**
  * @swagger
@@ -121,6 +118,58 @@ router.get("/", apiAuth, getGameRecord);
  *       400:
  *         description: 필수 필드 누락
  */
-router.post("/", apiAuth, saveGameRecord);
+router.post("/", apiAuth, gameController.saveGameRecord);
+
+/**
+ * @swagger
+ * /api/game-records/{id}/public:
+ *   patch:
+ *     tags:
+ *       - Record
+ *     summary: 게임 기록 보존 여부 수정
+ *     description: 특정 게임 기록의 공개(보존) 여부를 수정합니다.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "Bearer {accessToken} 형식의 JWT 토큰"
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "수정할 게임 기록의 _id"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isPublic
+ *             properties:
+ *               isPublic:
+ *                 type: boolean
+ *                 description: "true면 공개, false면 비공개"
+ *     responses:
+ *       200:
+ *         description: 게임 기록 보존 상태 변경 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 record:
+ *                   $ref: '#/components/schemas/GameRecord'
+ *       404:
+ *         description: 게임 기록이 없음
+ *       400:
+ *         description: isPublic 값 없음
+ */
+router.patch("/:id/public", apiAuth, gameController.updateGameRecordPublic);
 
 module.exports = router;

@@ -23,13 +23,13 @@ export async function fetchUserInfo(token) {
 }
 
 // 닉네임 변경 API
-export async function updateNickname(uid, nickname) {
+export async function updateNickname(uid, nickname, token) {
   const response = await fetch(`${API_URL}/api/users/nickname`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-    credentials: "include", // 쿠키 자동 포함
     body: JSON.stringify({ uid, nickname }),
   });
 

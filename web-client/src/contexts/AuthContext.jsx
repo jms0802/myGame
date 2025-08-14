@@ -33,23 +33,20 @@ export const AuthProvider = ({ children }) => {
 
     if (token) {
       // 구글 연동 사용자: 서버에 저장
-      const result = await updateNickname(user.uid, newNickname);
-      if (result?.success) {
+      const [ status, msg ] = await updateNickname(user.uid, newNickname, token);
+      if (status >= 200 && status < 300) {
         setUser({ ...user, nickname: newNickname });
-        return { success: true, message: "닉네임이 변경되었습니다." };
-      } else {
-        return {
-          success: false,
-          message: result?.message || "서버 변경에 실패했습니다.",
-        };
-      }
+      } 
+
+      return [ status, msg.message ]
+
     } else {
       // 게스트 사용자
       setLocalNickname(newNickname);
       setUser({ ...user, nickname: newNickname });
 
       console.log(user.uid, newNickname);
-      return { success: true, message: "닉네임이 변경되었습니다." };
+      return { status: 200, message: "닉네임이 변경되었습니다." };
     }
   };
 

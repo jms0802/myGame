@@ -68,7 +68,7 @@ router.get('/profile', getProfile);
 /**
  * @swagger
  * /api/users/nickname:
- *   put:
+ *   patch:
  *     tags:
  *       - User
  *     summary: 닉네임 변경
@@ -106,7 +106,7 @@ router.get('/profile', getProfile);
  *       404:
  *         description: 사용자를 찾을 수 없음
  */
-router.put('/nickname', apiAuth, updateNickname);
+router.patch('/nickname', apiAuth, updateNickname);
 
 /**
  * @swagger
@@ -141,6 +141,8 @@ router.put('/nickname', apiAuth, updateNickname);
  *                   type: string
  *       400:
  *         description: 닉네임 누락 또는 길이 초과
+ *       409:
+ *         description: 이미 사용중인 닉네임
  */
 router.get('/check-nickname', checkNickname);
 

@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
-import { saveGameRecord, fetchGameRecord } from "../api/gameApi";
+import { saveGameRecord, fetchGameRecord, updateGameRecordPublic } from "../api/gameApi";
 import { getAuthCookie } from "../utils/storage";
-
 export function useGameRecord() {
   const [loading, setLoading] = useState(false);
 
@@ -51,9 +50,32 @@ export function useGameRecord() {
     }
   }, []);
 
+  const updateRecordPublic = useCallback(async (id, isPublic) => {
+    setLoading(true);
+    try {
+      const token = getAuthCookie();
+      if (!token) {
+        return false;
+      }
+      const [status, data] = await updateGameRecordPublic(token, id, isPublic);
+      if (status >= 200 && status < 300) {
+        return true;
+      } else {
+        console.error('API 에러:', status, data.message);
+        return false;
+      }
+    } catch (err) {
+      console.error(err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     saveRecord,
     getRecords,
+    updateRecordPublic,
     recordLoading: loading,
   };
 }

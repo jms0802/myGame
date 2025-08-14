@@ -57,3 +57,27 @@ exports.saveGameRecord = asyncHandler(async (req, res) => {
 
   res.status(201).json({ message: "게임 기록 저장 완료" });
 });
+
+exports.updateGameRecordPublic = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const { id } = req.params;
+  const { isPublic } = req.body;
+
+  if (typeof isPublic !== "boolean") {
+    return res.status(400).json({ message: "isPublic 값을 전달해 주세요." });
+  }
+
+  const updated = await GameRecord.findOneAndUpdate(
+    { _id: id, uid: user.uid },
+    { isPublic },
+    { new: true }
+  );
+
+  if (!updated) {
+    return res.status(404).json({ message: "해당 게임 기록을 찾을 수 없습니다." });
+  }
+
+  return res.status(200).json({
+    message: "보존 여부 변경 성공"
+  });
+});

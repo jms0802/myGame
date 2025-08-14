@@ -9,7 +9,7 @@ import BoardPreview from "../components/Game/BoardPreview";
 
 export default function Profile() {
   const { user, editNickname, isLoading } = useAuth();
-  const { getRecords } = useGameRecord();
+  const { getRecords, updateRecordPublic } = useGameRecord();
   const { loginWithGoogle } = useGoogleLogin();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
@@ -137,12 +137,12 @@ export default function Profile() {
     try {
       const [status, msg] = await editNickname(user, nickname);
       if (status >= 200 && status < 300) {
-        alert(msg.message);
+        alert(msg);
         setEditing(false);
         setNicknameStatus({ available: true, message: "" });
       } else {
         setIsUpdating(true);
-        alert(msg.message);
+        alert(msg);
         setNickname(user?.nickname || "");
       }
     } catch (error) {
@@ -477,7 +477,8 @@ export default function Profile() {
                           style={{ borderColor: "var(--main-bg)" }}
                         >
                           <div className="flex flex-col md:flex-row justify-evenly items-center gap-4">
-                            <div className="flex flex-row md:flex-col gap-2"
+                            <div
+                              className="flex flex-row md:flex-col gap-2"
                               style={{
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -491,8 +492,7 @@ export default function Profile() {
                                 }}
                               >
                                 보드 정보 복사
-                                <span
-                                  className="cursor-pointer">
+                                <span className="cursor-pointer">
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="1em"
@@ -506,11 +506,20 @@ export default function Profile() {
                                     style={{ verticalAlign: "middle" }}
                                     onClick={async (e) => {
                                       e.stopPropagation();
-                                      await navigator.clipboard.writeText(item._id);
+                                      await navigator.clipboard.writeText(
+                                        item._id
+                                      );
                                       alert("복사 완료!");
                                     }}
                                   >
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <rect
+                                      x="9"
+                                      y="9"
+                                      width="13"
+                                      height="13"
+                                      rx="2"
+                                      ry="2"
+                                    ></rect>
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                   </svg>
                                 </span>
@@ -534,6 +543,26 @@ export default function Profile() {
                                 <input
                                   type="checkbox"
                                   checked={item.isPublic}
+                                  onChange={async (e) => {
+                                    const next = e.target.checked;
+                                    const ok = await updateRecordPublic(
+                                      item._id,
+                                      next
+                                    );
+                                    if (ok) {
+                                      setUserHistory((prev) =>
+                                        prev.map((r) =>
+                                          r._id === item._id
+                                            ? { ...r, isPublic: next }
+                                            : r
+                                        )
+                                      );
+                                    } else {
+                                      alert(
+                                        "기록 보존 여부 변경에 실패했습니다."
+                                      );
+                                    }
+                                  }}
                                   style={{
                                     accentColor: "var(--btn-default)",
                                     width: "1.2rem",
