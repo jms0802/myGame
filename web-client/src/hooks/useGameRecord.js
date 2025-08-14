@@ -59,7 +59,7 @@ export function useGameRecord() {
       }
       const [status, data] = await updateGameRecordPublic(token, id, isPublic);
       if (status >= 200 && status < 300) {
-        return true;
+        return data.record;
       } else {
         console.error('API 에러:', status, data.message);
         return false;

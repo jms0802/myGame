@@ -23,6 +23,7 @@ export default function Profile() {
   const [userHistory, setUserHistory] = useState([]);
   const [recordLoading, setRecordLoading] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false); // 추가
+  const [showHistoryInfo, setShowHistoryInfo] = useState(false);
 
   // 상세보기 펼침 상태 (record _id -> boolean)
   const [expanded, setExpanded] = useState({});
@@ -34,7 +35,9 @@ export default function Profile() {
     const fetchUserHistory = async () => {
       setRecordLoading(true);
       const history = await getRecords();
-      setUserHistory(history.records);
+      if(history)
+        setUserHistory(history.records);
+      
       setRecordLoading(false);
     };
     fetchUserHistory();
@@ -370,19 +373,41 @@ export default function Profile() {
               color: "var(--main-color)",
             }}
           >
-            <h2
-              className="font-bold text-lg mb-4"
-              style={{ color: "var(--main-color)" }}
-            >
-              Game History{" "}
-              {!user.googleId || !userHistory
-                ? ""
-                : showAllHistory
-                  ? userHistory.length
-                  : userHistory.length > 3
-                    ? "3 / " + userHistory.length
-                    : ""}
-            </h2>
+            <div className="flex items-center justify-start mb-4">
+              <h2
+                className="font-bold text-lg"
+                style={{ color: "var(--main-color)" }}
+              >
+                Game History{" "}
+                {!user.googleId || !userHistory
+                  ? ""
+                  : showAllHistory
+                    ? userHistory.length
+                    : userHistory.length > 3
+                      ? "3 / " + userHistory.length
+                      : ""}
+              </h2>
+              <button
+                className="ml-2 rounded-full hover:bg-gray-300 text-base"
+                aria-label="게임 기록 정보"
+                onClick={() => setShowHistoryInfo(true)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                  />
+                </svg>
+              </button>
+            </div>
             {recordLoading && <Loading isLoading={recordLoading} />}
             {!user.googleId ? (
               <>
@@ -473,12 +498,12 @@ export default function Profile() {
 
                       {expanded[item._id] && (
                         <div
-                          className="mt-3 border-t"
+                          className="my-3"
                           style={{ borderColor: "var(--main-bg)" }}
                         >
                           <div className="flex flex-col md:flex-row justify-evenly items-center gap-4">
                             <div
-                              className="flex flex-row md:flex-col gap-2"
+                              className="flex flex-col gap-2"
                               style={{
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -545,15 +570,19 @@ export default function Profile() {
                                   checked={item.isPublic}
                                   onChange={async (e) => {
                                     const next = e.target.checked;
-                                    const ok = await updateRecordPublic(
+                                    const data = await updateRecordPublic(
                                       item._id,
                                       next
                                     );
-                                    if (ok) {
+                                    if (data) {
                                       setUserHistory((prev) =>
                                         prev.map((r) =>
                                           r._id === item._id
-                                            ? { ...r, isPublic: next }
+                                            ? { 
+                                                ...r, 
+                                                isPublic: next,
+                                                expireAt: data.expireAt || null
+                                              }
                                             : r
                                         )
                                       );
@@ -570,6 +599,24 @@ export default function Profile() {
                                   }}
                                 />
                               </label>
+                              {item.expireAt && !item.isPublic && (
+                                <div
+                                  className="flex items-center gap-1 text-red-500"
+                                  style={{
+                                    fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                                  }}
+                                >
+                                  {(() => {
+                                    const expireDate = new Date(item.expireAt);
+                                    return expireDate.toLocaleString("ko-KR", {
+                                      timeZone: "Asia/Seoul",
+                                      dateStyle: "short",
+                                      timeStyle: "medium",
+                                      hour12: false,
+                                    });
+                                  })()}
+                                </div>
+                              )}
                             </div>
                             <BoardPreview
                               board={item.stageData?.board}
@@ -604,6 +651,96 @@ export default function Profile() {
         </div>
       </div>
       <Loading isLoading={isLoading} />
+
+      {/* 게임 기록 정보 모달 */}
+      {showHistoryInfo && (
+        <div className="fixed inset-0 bg-gray-500/40 flex items-center justify-center z-50">
+          <div
+            className="bg-white rounded-lg p-6 max-w-md mx-4"
+            style={{
+              background: "var(--modal-bg)",
+              color: "var(--main-color)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">게임 기록 정보</h3>
+              <button
+                onClick={() => setShowHistoryInfo(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-5 text-blue-500 mt-0.5 flex-shrink-0"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                  />
+                </svg>
+                <div>
+                  <p className="font-medium">자동 삭제</p>
+                  <p className="text-sm text-gray-600">
+                    게임 기록은 생성일로부터 <span className="font-bold text-red-500">15일 후 자동으로 삭제</span>됩니다.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-5 text-green-500 mt-0.5 flex-shrink-0"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div>
+                  <p className="font-medium">기록 보존</p>
+                  <p className="text-sm text-gray-600">
+                    기록 상세보기를 통해 원하는 기록을 보존합니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowHistoryInfo(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

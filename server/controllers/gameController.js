@@ -69,7 +69,7 @@ exports.updateGameRecordPublic = asyncHandler(async (req, res) => {
 
   const updated = await GameRecord.findOneAndUpdate(
     { _id: id, uid: user.uid },
-    { isPublic },
+    { $set: { isPublic } },
     { new: true }
   );
 
@@ -78,6 +78,6 @@ exports.updateGameRecordPublic = asyncHandler(async (req, res) => {
   }
 
   return res.status(200).json({
-    message: "보존 여부 변경 성공"
+    record: updated
   });
 });

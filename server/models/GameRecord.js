@@ -4,36 +4,78 @@ const { Schema } = mongoose;
 const gameRecordSchema = new Schema({
   uid: { type: String, required: true },
   score: { type: Number },
-  playDate: { type: Date },
+  playDate: { 
+    type: Date,
+    default: Date.now
+  },
+  expireAt: {
+    type: Date,
+    expires: 0
+  },
   isPublic: { type: Boolean, default: false },
   stageData: { type: Object },
 });
 
+const TTL_DAYS = 15;
+const TTL_MILLISECONDS = TTL_DAYS * 24 * 60 * 60 * 1000; // 15일
+
+gameRecordSchema.pre("save", function(next) {
+  if (this.isPublic) {
+    this.expireAt = undefined; // 공개면 만료 없음
+  } else {
+    if (!this.expireAt) {
+      this.expireAt = new Date(Date.now() + TTL_MILLISECONDS); // 비공개면 15일 뒤 만료
+    }
+  }
+  next();
+});
+
+gameRecordSchema.pre("findOneAndUpdate", function(next) {
+  const update = this.getUpdate() || {};
+  const $set = update.$set || {};
+  const $unset = update.$unset || {};
+  let isPublicVal;
+
+  if (Object.prototype.hasOwnProperty.call(update, "isPublic")) {
+    isPublicVal = update.isPublic;
+    delete update.isPublic;
+  } else if (Object.prototype.hasOwnProperty.call($set, "isPublic")) {
+    isPublicVal = $set.isPublic;
+  }
+
+  if (typeof isPublicVal === "boolean") {
+    if (isPublicVal === true) {
+      $unset.expireAt = ""; // 공개 → 만료 제거
+    } else {
+      $set.expireAt = new Date(Date.now() + TTL_MILLISECONDS); // 비공개 → 15일 뒤 만료
+    }
+  }
+
+  update.$set = $set;
+  if (Object.keys($unset).length) update.$unset = $unset;
+  this.setUpdate(update);
+  next();
+});
+
+// Rank 업데이트
 gameRecordSchema.post("save", async function (doc, next) {
   try {
     const uid = doc.uid;
     const Rank = mongoose.model("Rank");
     const User = mongoose.model("User");
-    const GameRecord = mongoose.model("GameRecord");
 
     let rank = await Rank.findOne({ uid });
     if (rank) {
-      // playCount는 해당 uid의 GameRecord 개수로 갱신
-      const playCount = await GameRecord.countDocuments({ uid });
-      rank.playCount = playCount;
+      rank.playCount = (typeof rank.playCount === "number" ? rank.playCount : 0) + 1;
       rank.updatedAt = new Date();
       await rank.save();
     } else {
-      // User에서 nickname 가져와서 새 Rank 생성
       const user = await User.findOne({ uid });
-      if (user) {
-        const playCount = await GameRecord.countDocuments({ uid });
-        await Rank.create({
-          uid,
-          nickname: user.nickname,
-          playCount,
-        });
-      }
+      await Rank.create({
+        uid,
+        nickname: user ? user.nickname : undefined,
+        playCount: 1,
+      });
     }
     next();
   } catch (err) {
@@ -42,46 +84,40 @@ gameRecordSchema.post("save", async function (doc, next) {
   }
 });
 
-// GameRecord 저장 시 UserRecord 자동 갱신 (집계는 GameRecord에서 계산)
+// UserRecord 업데이트
 gameRecordSchema.post("save", async function (doc, next) {
   try {
     const UserRecord = mongoose.model("UserRecord");
-    const GameRecord = mongoose.model("GameRecord");
 
     const uid = doc.uid;
     const playedAt = doc.playDate || new Date();
-
-    // 해당 uid의 모든 게임 기록을 가져와서 집계
-    const records = await GameRecord.find({ uid });
-
-    const gameCount = records.length;
-    let avgScore = 0;
-    let maxScore = null;
-    let lastPlayedAt = null;
-
-    if (gameCount > 0) {
-      const scores = records.map(r => typeof r.score === "number" ? r.score : 0);
-      const playDates = records.map(r => r.playDate ? new Date(r.playDate) : null).filter(Boolean);
-
-      avgScore = Math.round((scores.reduce((a, b) => a + b, 0) / gameCount) * 100) / 100;
-      maxScore = Math.max(...scores);
-      lastPlayedAt = playDates.length > 0 ? new Date(Math.max(...playDates.map(d => d.getTime()))) : playedAt;
-    }
+    const score = typeof doc.score === "number" ? doc.score : 0;
 
     const existing = await UserRecord.findOne({ uid });
+
     if (existing) {
-      existing.gameCount = gameCount;
-      existing.avgScore = avgScore;
-      existing.maxScore = maxScore;
-      existing.lastPlayedAt = lastPlayedAt;
+      const prevCount = typeof existing.gameCount === "number" ? existing.gameCount : 0;
+      const prevAvg = typeof existing.avgScore === "number" ? existing.avgScore : 0;
+      const prevMax = existing.maxScore != null ? existing.maxScore : null;
+
+      const newCount = prevCount + 1;
+      const newAvg = Math.round(((prevAvg * prevCount + score) / newCount) * 100) / 100;
+      const newMax = prevMax == null ? score : Math.max(prevMax, score);
+
+      existing.gameCount = newCount;
+      existing.avgScore = newAvg;
+      existing.maxScore = newMax;
+      if (!existing.lastPlayedAt || playedAt > existing.lastPlayedAt) {
+        existing.lastPlayedAt = playedAt;
+      }
       await existing.save();
     } else {
       await UserRecord.create({
         uid,
-        gameCount,
-        avgScore,
-        maxScore,
-        lastPlayedAt,
+        gameCount: 1,
+        avgScore: Math.round(score * 100) / 100,
+        maxScore: score,
+        lastPlayedAt: playedAt,
       });
     }
 

@@ -26,15 +26,15 @@ const createInitialBoard = () => {
     .map(() =>
       Array(BOARD_SIZE)
         .fill(null)
-        .map(() => ({ walls: new Set() }))
+        .map(() => ({ walls: [] })) // Set 대신 배열 사용
     );
 
   // 외곽 벽 설정
   for (let i = 0; i < BOARD_SIZE; i++) {
-    board[0][i].walls.add(WALL_TYPES.TOP);
-    board[BOARD_SIZE - 1][i].walls.add(WALL_TYPES.BOTTOM);
-    board[i][0].walls.add(WALL_TYPES.LEFT);
-    board[i][BOARD_SIZE - 1].walls.add(WALL_TYPES.RIGHT);
+    board[0][i].walls.push(WALL_TYPES.TOP);
+    board[BOARD_SIZE - 1][i].walls.push(WALL_TYPES.BOTTOM);
+    board[i][0].walls.push(WALL_TYPES.LEFT);
+    board[i][BOARD_SIZE - 1].walls.push(WALL_TYPES.RIGHT);
   }
 
   const wallCount = Math.floor(Math.random() * 10) + 10;
@@ -44,14 +44,14 @@ const createInitialBoard = () => {
     const y = Math.floor(Math.random() * BOARD_SIZE);
 
     // 현재 셀의 벽 개수 확인
-    const currentWalls = board[y][x].walls.size;
+    const currentWalls = board[y][x].walls.length;
     if (currentWalls >= 3) continue; // 이미 3개의 벽이 있으면 건너뛰기
 
     // 가능한 방향들 중에서 선택
     const availableDirections = Object.values(WALL_TYPES).filter(
       (direction) => {
         // 이미 해당 방향에 벽이 있는지 확인
-        if (board[y][x].walls.has(direction)) return false;
+        if (board[y][x].walls.includes(direction)) return false;
 
         // 반대쪽 셀의 벽 개수 확인
         let oppositeX = x;
@@ -77,7 +77,7 @@ const createInitialBoard = () => {
         }
 
         // 반대쪽 셀의 벽 개수가 3개 이상이면 건너뛰기
-        if (board[oppositeY][oppositeX].walls.size >= 3) return false;
+        if (board[oppositeY][oppositeX].walls.length >= 3) return false;
 
         return true;
       }
@@ -92,21 +92,21 @@ const createInitialBoard = () => {
       ];
 
     // 벽 추가
-    board[y][x].walls.add(direction);
+    board[y][x].walls.push(direction);
 
     // 반대쪽 셀에도 벽 추가
     switch (direction) {
       case WALL_TYPES.RIGHT:
-        board[y][x + 1].walls.add(WALL_TYPES.LEFT);
+        board[y][x + 1].walls.push(WALL_TYPES.LEFT);
         break;
       case WALL_TYPES.LEFT:
-        board[y][x - 1].walls.add(WALL_TYPES.RIGHT);
+        board[y][x - 1].walls.push(WALL_TYPES.RIGHT);
         break;
       case WALL_TYPES.TOP:
-        board[y - 1][x].walls.add(WALL_TYPES.BOTTOM);
+        board[y - 1][x].walls.push(WALL_TYPES.BOTTOM);
         break;
       case WALL_TYPES.BOTTOM:
-        board[y + 1][x].walls.add(WALL_TYPES.TOP);
+        board[y + 1][x].walls.push(WALL_TYPES.TOP);
         break;
     }
   }
@@ -221,19 +221,19 @@ const RicochetRobotGame = () => {
           let blocked = false;
           switch (direction) {
             case "up":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.TOP))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.TOP))
                 blocked = true;
               break;
             case "down":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.BOTTOM))
                 blocked = true;
               break;
             case "left":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.LEFT))
                 blocked = true;
               break;
             case "right":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.RIGHT))
                 blocked = true;
               break;
           }
@@ -303,16 +303,16 @@ const RicochetRobotGame = () => {
         let blocked = false;
         switch (direction) {
           case "up":
-            if (board[newY][newX].walls.has(WALL_TYPES.TOP)) blocked = true;
+            if (board[newY][newX].walls.includes(WALL_TYPES.TOP)) blocked = true;
             break;
           case "down":
-            if (board[newY][newX].walls.has(WALL_TYPES.BOTTOM)) blocked = true;
+            if (board[newY][newX].walls.includes(WALL_TYPES.BOTTOM)) blocked = true;
             break;
           case "left":
-            if (board[newY][newX].walls.has(WALL_TYPES.LEFT)) blocked = true;
+            if (board[newY][newX].walls.includes(WALL_TYPES.LEFT)) blocked = true;
             break;
           case "right":
-            if (board[newY][newX].walls.has(WALL_TYPES.RIGHT)) blocked = true;
+            if (board[newY][newX].walls.includes(WALL_TYPES.RIGHT)) blocked = true;
             break;
         }
 
@@ -383,19 +383,19 @@ const RicochetRobotGame = () => {
           let blocked = false;
           switch (direction) {
             case "up":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.TOP))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.TOP))
                 blocked = true;
               break;
             case "down":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.BOTTOM))
                 blocked = true;
               break;
             case "left":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.LEFT))
                 blocked = true;
               break;
             case "right":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.RIGHT))
                 blocked = true;
               break;
           }
@@ -503,11 +503,13 @@ const RicochetRobotGame = () => {
     setSelectedRobot(null);
     setHighlightedCells([]);
 
+    console.log(board);
+
     const record = {
       score: moveCount + 1,
       isPublic: false,
       stageData: {
-        robots: robots,
+        robots: prevRobots,
         target: target,
         board: board,
       },
@@ -588,19 +590,19 @@ const RicochetRobotGame = () => {
           let blocked = false;
           switch (direction) {
             case "up":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.TOP))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.TOP))
                 blocked = true;
               break;
             case "down":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.BOTTOM))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.BOTTOM))
                 blocked = true;
               break;
             case "left":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.LEFT))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.LEFT))
                 blocked = true;
               break;
             case "right":
-              if (board[currentY][currentX].walls.has(WALL_TYPES.RIGHT))
+              if (board[currentY][currentX].walls.includes(WALL_TYPES.RIGHT))
                 blocked = true;
               break;
           }
@@ -644,32 +646,32 @@ const RicochetRobotGame = () => {
     );
 
     const wallStyles = {
-      borderTopWidth: cell.walls.has(WALL_TYPES.TOP) ? "4px" : "1px",
-      borderRightWidth: cell.walls.has(WALL_TYPES.RIGHT) ? "4px" : "1px",
-      borderBottomWidth: cell.walls.has(WALL_TYPES.BOTTOM) ? "4px" : "1px",
-      borderLeftWidth: cell.walls.has(WALL_TYPES.LEFT) ? "4px" : "1px",
-      borderTopColor: cell.walls.has(WALL_TYPES.TOP)
+      borderTopWidth: cell.walls.includes(WALL_TYPES.TOP) ? "4px" : "1px",
+      borderRightWidth: cell.walls.includes(WALL_TYPES.RIGHT) ? "4px" : "1px",
+      borderBottomWidth: cell.walls.includes(WALL_TYPES.BOTTOM) ? "4px" : "1px",
+      borderLeftWidth: cell.walls.includes(WALL_TYPES.LEFT) ? "4px" : "1px",
+      borderTopColor: cell.walls.includes(WALL_TYPES.TOP)
         ? dark
           ? "#dedede"
           : "dimgray"
         : dark
           ? "#7d7d7d"
           : "#d3d3d3",
-      borderRightColor: cell.walls.has(WALL_TYPES.RIGHT)
+      borderRightColor: cell.walls.includes(WALL_TYPES.RIGHT)
         ? dark
           ? "#dedede"
           : "dimgray"
         : dark
           ? "#7d7d7d"
           : "#d3d3d3",
-      borderBottomColor: cell.walls.has(WALL_TYPES.BOTTOM)
+      borderBottomColor: cell.walls.includes(WALL_TYPES.BOTTOM)
         ? dark
           ? "#dedede"
           : "dimgray"
         : dark
           ? "#7d7d7d"
           : "#d3d3d3",
-      borderLeftColor: cell.walls.has(WALL_TYPES.LEFT)
+      borderLeftColor: cell.walls.includes(WALL_TYPES.LEFT)
         ? dark
           ? "#dedede"
           : "dimgray"
