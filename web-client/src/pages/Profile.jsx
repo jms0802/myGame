@@ -20,7 +20,7 @@ export default function Profile() {
     message: "",
   });
   const [isChecking, setIsChecking] = useState(true);
-  const [userHistory, setUserHistory] = useState([]);
+  const [userHistory, setUserHistory] = useState();
   const [recordLoading, setRecordLoading] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false); // 추가
   const [showHistoryInfo, setShowHistoryInfo] = useState(false);
@@ -407,242 +407,247 @@ export default function Profile() {
                 </svg>
               </button>
             </div>
-            {recordLoading && <Loading isLoading={recordLoading} />}
-            {!user.googleId ? (
-              <>
-                <div className="mb-4 text-center">
-                  <div className="text-base font-bold text-blue-600 mb-2">
-                    <span className="px-2 py-1 rounded">
-                      구글 연동 시{" "}
-                      <span className="underline decoration-wavy decoration-pink-500">
-                        게임 기록
-                      </span>
-                      이 저장됩니다!
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-600 italic">
-                    먼저 게임을 플레이하여 기록을 만들어보세요!
-                  </div>
-                </div>
-              </>
-            ) : !userHistory ? (
-              <>
-                <div className="mb-4 text-center">
-                  <div className="text-base font-bold text-blue-600 mb-2">
-                    <span className="px-2 py-1 rounded">
-                      아직 게임 기록이 없습니다!
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-600 italic">
-                    먼저 게임을 플레이하여 기록을 만들어보세요!
-                  </div>
-                </div>
-              </>
+            {recordLoading ? (
+              <Loading isLoading={recordLoading} zIndex={50} />
             ) : (
               <>
-                {userHistory
-                  .slice(0, showAllHistory ? userHistory.length : 3)
-                  .map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-xl py-3 border-b p-6 mb-2"
-                      style={{
-                        background: "var(--modal-bg)",
-                        color: "var(--main-color)",
-                      }}
-                    >
-                      <div className="w-full flex items-center justify-between">
-                        <div>
-                          <div
-                            className="font-bold "
-                            style={{
-                              fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
-                            }}
-                          >
-                            이동 횟수 : {item.score} 회
-                          </div>
-                          <div
-                            style={{
-                              color: "var(--count-color)",
-                              fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
-                            }}
-                          >
-                            {(() => {
-                              const date = new Date(item.playDate);
-                              const formattedDate = date.toLocaleString(
-                                "ko-KR",
-                                {
-                                  timeZone: "Asia/Seoul",
-                                  dateStyle: "short",
-                                  timeStyle: "medium",
-                                  hour12: false,
-                                }
-                              );
-                              return formattedDate;
-                            })()}
-                          </div>
-                        </div>
-                        <button
-                          className="rounded-full px-3 py-1 text-sm font-medium shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          style={{
-                            background: "var(--btn-default)",
-                            color: "#fff",
-                            fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
-                          }}
-                          onClick={() => toggleDetails(item._id)}
-                        >
-                          {expanded[item._id] ? "접기" : "상세보기"}
-                        </button>
+                {!user.googleId ? (
+                  <>
+                    <div className="mb-4 text-center">
+                      <div className="text-base font-bold text-blue-600 mb-2">
+                        <span className="px-2 py-1 rounded">
+                          구글 연동 시{" "}
+                          <span className="underline decoration-wavy decoration-pink-500">
+                            게임 기록
+                          </span>
+                          이 저장됩니다!
+                        </span>
                       </div>
-
-                      {expanded[item._id] && (
+                      <div className="text-sm text-gray-600 italic">
+                        먼저 게임을 플레이하여 기록을 만들어보세요!
+                      </div>
+                    </div>
+                  </>
+                ) : !userHistory || userHistory.length < 1 ? (
+                  <>
+                    <div className="mb-4 text-center">
+                      <div className="text-base font-bold text-blue-600 mb-2">
+                        <span className="px-2 py-1 rounded">
+                          아직 게임 기록이 없습니다!
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600 italic">
+                        먼저 게임을 플레이하여 기록을 만들어보세요!
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {userHistory
+                      .slice(0, showAllHistory ? userHistory.length : 3)
+                      .map((item, idx) => (
                         <div
-                          className="my-3"
-                          style={{ borderColor: "var(--main-bg)" }}
+                          key={idx}
+                          className="rounded-xl py-3 border-b p-6 mb-2"
+                          style={{
+                            background: "var(--modal-bg)",
+                            color: "var(--main-color)",
+                          }}
                         >
-                          <div className="flex flex-col md:flex-row justify-evenly items-center gap-4">
-                            <div
-                              className="flex flex-col gap-2"
-                              style={{
-                                alignItems: "center",
-                                justifyContent: "center",
-                                textAlign: "center",
-                              }}
-                            >
+                          <div className="w-full flex items-center justify-between">
+                            <div>
                               <div
-                                className="flex items-center gap-1 md:mb-5"
+                                className="font-bold "
                                 style={{
                                   fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
                                 }}
                               >
-                                보드 정보 복사
-                                <span className="cursor-pointer">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="1em"
-                                    height="1em"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    style={{ verticalAlign: "middle" }}
-                                    onClick={async (e) => {
-                                      e.stopPropagation();
-                                      await navigator.clipboard.writeText(
-                                        item._id
-                                      );
-                                      alert("복사 완료!");
-                                    }}
-                                  >
-                                    <rect
-                                      x="9"
-                                      y="9"
-                                      width="13"
-                                      height="13"
-                                      rx="2"
-                                      ry="2"
-                                    ></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                  </svg>
-                                </span>
+                                이동 횟수 : {item.score} 회
                               </div>
                               <div
                                 style={{
+                                  color: "var(--count-color)",
                                   fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
                                 }}
                               >
-                                기록 보존 여부
-                              </div>
-                              <label
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                  gap: "0.5rem",
-                                  fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={item.isPublic}
-                                  onChange={async (e) => {
-                                    const next = e.target.checked;
-                                    const data = await updateRecordPublic(
-                                      item._id,
-                                      next
-                                    );
-                                    if (data) {
-                                      setUserHistory((prev) =>
-                                        prev.map((r) =>
-                                          r._id === item._id
-                                            ? {
-                                                ...r,
-                                                isPublic: next,
-                                                expireAt: data.expireAt || null,
-                                              }
-                                            : r
-                                        )
-                                      );
-                                    } else {
-                                      alert(
-                                        "기록 보존 여부 변경에 실패했습니다."
-                                      );
-                                    }
-                                  }}
-                                  style={{
-                                    accentColor: "var(--btn-default)",
-                                    width: "1.2rem",
-                                    height: "1.2rem",
-                                  }}
-                                />
-                              </label>
-                              {item.expireAt && !item.isPublic && (
-                                <div
-                                  className="flex items-center gap-1 text-red-500"
-                                  style={{
-                                    fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
-                                  }}
-                                >
-                                  {(() => {
-                                    const expireDate = new Date(item.expireAt);
-                                    return expireDate.toLocaleString("ko-KR", {
+                                {(() => {
+                                  const date = new Date(item.playDate);
+                                  const formattedDate = date.toLocaleString(
+                                    "ko-KR",
+                                    {
                                       timeZone: "Asia/Seoul",
                                       dateStyle: "short",
                                       timeStyle: "medium",
                                       hour12: false,
-                                    });
-                                  })()}
-                                </div>
-                              )}
+                                    }
+                                  );
+                                  return formattedDate;
+                                })()}
+                              </div>
                             </div>
-                            <BoardPreview
-                              board={item.stageData?.board}
-                              robots={item.stageData?.robots}
-                              target={item.stageData?.target}
-                            />
+                            <button
+                              className="rounded-full px-3 py-1 text-sm font-medium shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              style={{
+                                background: "var(--btn-default)",
+                                color: "#fff",
+                                fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
+                              }}
+                              onClick={() => toggleDetails(item._id)}
+                            >
+                              {expanded[item._id] ? "접기" : "상세보기"}
+                            </button>
                           </div>
+
+                          {expanded[item._id] && (
+                            <div
+                              className="my-3"
+                              style={{ borderColor: "var(--main-bg)" }}
+                            >
+                              <div className="flex flex-col md:flex-row justify-evenly items-center gap-4">
+                                <div
+                                  className="flex flex-col gap-2"
+                                  style={{
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  <div
+                                    className="flex items-center gap-1 md:mb-5"
+                                    style={{
+                                      fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                                    }}
+                                  >
+                                    보드 정보 복사
+                                    <span className="cursor-pointer">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="1em"
+                                        height="1em"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        style={{ verticalAlign: "middle" }}
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          await navigator.clipboard.writeText(
+                                            item._id
+                                          );
+                                          alert("복사 완료!");
+                                        }}
+                                      >
+                                        <rect
+                                          x="9"
+                                          y="9"
+                                          width="13"
+                                          height="13"
+                                          rx="2"
+                                          ry="2"
+                                        ></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                      </svg>
+                                    </span>
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                                    }}
+                                  >
+                                    기록 보존 여부
+                                  </div>
+                                  <label
+                                    style={{
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      alignItems: "center",
+                                      gap: "0.5rem",
+                                      fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={item.isPublic}
+                                      onChange={async (e) => {
+                                        const next = e.target.checked;
+                                        const data = await updateRecordPublic(
+                                          item._id,
+                                          next
+                                        );
+                                        if (data) {
+                                          setUserHistory((prev) =>
+                                            prev.map((r) =>
+                                              r._id === item._id
+                                                ? {
+                                                    ...r,
+                                                    isPublic: next,
+                                                    expireAt: data.expireAt || null,
+                                                  }
+                                                : r
+                                            )
+                                          );
+                                        } else {
+                                          alert(
+                                            "기록 보존 여부 변경에 실패했습니다."
+                                          );
+                                        }
+                                      }}
+                                      style={{
+                                        accentColor: "var(--btn-default)",
+                                        width: "1.2rem",
+                                        height: "1.2rem",
+                                      }}
+                                    />
+                                  </label>
+                                  {item.expireAt && !item.isPublic && (
+                                    <div
+                                      className="flex items-center gap-1 text-red-500"
+                                      style={{
+                                        fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                                      }}
+                                    >
+                                      {(() => {
+                                        const expireDate = new Date(item.expireAt);
+                                        return expireDate.toLocaleString("ko-KR", {
+                                          timeZone: "Asia/Seoul",
+                                          dateStyle: "short",
+                                          timeStyle: "medium",
+                                          hour12: false,
+                                        });
+                                      })()}
+                                    </div>
+                                  )}
+                                </div>
+                                <BoardPreview
+                                  board={item.stageData?.board}
+                                  robots={item.stageData?.robots}
+                                  target={item.stageData?.target}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                {/* 더보기 버툰 */}
-                {userHistory.length > 3 && (
-                  <div className="flex justify-center mt-4">
-                    <button
-                      className="rounded-full px-4 py-1 text-sm font-medium shadow cursor-pointer"
-                      style={{
-                        background: "var(--btn-default)",
-                        color: "#fff",
-                      }}
-                      onClick={() => {
-                        setShowAllHistory(!showAllHistory);
-                      }}
-                    >
-                      {showAllHistory ? "간략히" : "더보기"}
-                    </button>
-                  </div>
+                      ))}
+                    {/* 더보기 버툰 */}
+                    {userHistory.length > 3 && (
+                      <div className="flex justify-center mt-4">
+                        <button
+                          className="rounded-full px-4 py-1 text-sm font-medium shadow cursor-pointer"
+                          style={{
+                            background: "var(--btn-default)",
+                            color: "#fff",
+                          }}
+                          onClick={() => {
+                            setShowAllHistory(!showAllHistory);
+                          }}
+                        >
+                          {showAllHistory ? "간략히" : "더보기"}
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}

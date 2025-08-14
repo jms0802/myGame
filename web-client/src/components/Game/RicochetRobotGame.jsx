@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import "./RicochetRobotGame.css";
+import { useAuth } from "../../contexts/AuthContext";
 import { useDarkMode } from "../../contexts/DarkModeContext";
 import { useGameRecord } from "../../hooks/useGameRecord";
 import Loading from "../Loading";
@@ -177,6 +178,7 @@ const RicochetRobotGame = () => {
   const [showHelp, setShowHelp] = useState(false);
 
   const { saveRecord, recordLoading } = useGameRecord();
+  const { authLoading } = useAuth();
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
   const calculateHighlightedCells = useCallback(
@@ -508,8 +510,6 @@ const RicochetRobotGame = () => {
     setSelectedRobot(null);
     setHighlightedCells([]);
 
-    console.log(board);
-
     const record = {
       score: moveCount + 1,
       isPublic: false,
@@ -729,6 +729,7 @@ const RicochetRobotGame = () => {
 
   return (
     <div className="w-full h-full bg-[var(--main-bg)]">
+      <Loading isLoading={authLoading}/>
       <div className="game-container flex flex-col items-center p-4 md:p-8 max-w-screen-md mx-auto">
         <div className="flex items-center justify-between mt-8 mb-10">
           <h1 className="game-title text-2xl font-bold text-center flex-1">
