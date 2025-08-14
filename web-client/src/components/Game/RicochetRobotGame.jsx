@@ -23,10 +23,11 @@ const ROBOT_COLORS = {
 const createInitialBoard = () => {
   const board = Array(BOARD_SIZE)
     .fill(null)
-    .map(() =>
-      Array(BOARD_SIZE)
-        .fill(null)
-        .map(() => ({ walls: [] })) // Set 대신 배열 사용
+    .map(
+      () =>
+        Array(BOARD_SIZE)
+          .fill(null)
+          .map(() => ({ walls: [] })) // Set 대신 배열 사용
     );
 
   // 외곽 벽 설정
@@ -303,16 +304,20 @@ const RicochetRobotGame = () => {
         let blocked = false;
         switch (direction) {
           case "up":
-            if (board[newY][newX].walls.includes(WALL_TYPES.TOP)) blocked = true;
+            if (board[newY][newX].walls.includes(WALL_TYPES.TOP))
+              blocked = true;
             break;
           case "down":
-            if (board[newY][newX].walls.includes(WALL_TYPES.BOTTOM)) blocked = true;
+            if (board[newY][newX].walls.includes(WALL_TYPES.BOTTOM))
+              blocked = true;
             break;
           case "left":
-            if (board[newY][newX].walls.includes(WALL_TYPES.LEFT)) blocked = true;
+            if (board[newY][newX].walls.includes(WALL_TYPES.LEFT))
+              blocked = true;
             break;
           case "right":
-            if (board[newY][newX].walls.includes(WALL_TYPES.RIGHT)) blocked = true;
+            if (board[newY][newX].walls.includes(WALL_TYPES.RIGHT))
+              blocked = true;
             break;
         }
 
@@ -516,7 +521,6 @@ const RicochetRobotGame = () => {
     };
 
     await saveRecord(record);
-    
   };
 
   // 로봇 선택 시 하이라이트 계산
@@ -731,7 +735,11 @@ const RicochetRobotGame = () => {
             ClashGrid
           </h1>
           <button
-            className="ml-2 rounded-full bg-gray-200 hover:bg-gray-300 text-lg"
+            className="ml-2 rounded-full text-lg cursor-pointer"
+            style={{
+              background: "var(--main-board-bg)",
+              color: "var(--main-color)",
+            }}
             aria-label="게임 설명"
             onClick={() => setShowHelp(true)}
           >
@@ -759,12 +767,16 @@ const RicochetRobotGame = () => {
             onClick={() => setShowHelp(false)}
           >
             <div
-              className="bg-white rounded-xl shadow-lg p-6 w-full max-w-xs"
+              className="rounded-xl shadow-lg p-6 w-full max-w-xs"
+              style={{
+                background: "var(--modal-bg)",
+                color: "var(--main-color)",
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-lg font-bold mb-2">게임 설명</h2>
-              <p className="mb-1">목표: 색깔 원에 해당 로봇을 도달시키세요!</p>
-              <p>로봇은 벽이나 다른 로봇에 부딪힐 때까지 계속 이동합니다.</p>
+              <p className="mb-1"><span className="font-bold text-blue-500">목표:</span> 색깔 원에 해당 로봇을 도달시키세요!</p>
+              <p className="text-sm">로봇은 벽이나 다른 로봇에 부딪힐 때까지 계속 이동합니다.</p>
               <button
                 className="mt-4 w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                 onClick={() => setShowHelp(false)}

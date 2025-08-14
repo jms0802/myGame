@@ -35,9 +35,8 @@ export default function Profile() {
     const fetchUserHistory = async () => {
       setRecordLoading(true);
       const history = await getRecords();
-      if(history)
-        setUserHistory(history.records);
-      
+      if (history) setUserHistory(history.records);
+
       setRecordLoading(false);
     };
     fetchUserHistory();
@@ -388,7 +387,7 @@ export default function Profile() {
                       : ""}
               </h2>
               <button
-                className="ml-2 rounded-full hover:bg-gray-300 text-base"
+                className="ml-2 rounded-full text-base"
                 aria-label="게임 기록 정보"
                 onClick={() => setShowHistoryInfo(true)}
               >
@@ -578,10 +577,10 @@ export default function Profile() {
                                       setUserHistory((prev) =>
                                         prev.map((r) =>
                                           r._id === item._id
-                                            ? { 
-                                                ...r, 
+                                            ? {
+                                                ...r,
                                                 isPublic: next,
-                                                expireAt: data.expireAt || null
+                                                expireAt: data.expireAt || null,
                                               }
                                             : r
                                         )
@@ -654,7 +653,10 @@ export default function Profile() {
 
       {/* 게임 기록 정보 모달 */}
       {showHistoryInfo && (
-        <div className="fixed inset-0 bg-gray-500/40 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-gray-500/40 flex items-center justify-center z-50"
+          onClick={() => setShowHistoryInfo(false)}
+        >
           <div
             className="bg-white rounded-lg p-6 max-w-md mx-4"
             style={{
@@ -701,9 +703,13 @@ export default function Profile() {
                   />
                 </svg>
                 <div>
-                  <p className="font-medium">자동 삭제</p>
-                  <p className="text-sm text-gray-600">
-                    게임 기록은 생성일로부터 <span className="font-bold text-red-500">15일 후 자동으로 삭제</span>됩니다.
+                  <p className="font-bold">자동 삭제</p>
+                  <p className="text-sm">
+                    게임 기록은 생성일로부터{" "}
+                    <span className="font-bold text-red-500">
+                      15일 후 자동으로 삭제
+                    </span>
+                    됩니다.
                   </p>
                 </div>
               </div>
@@ -723,20 +729,12 @@ export default function Profile() {
                   />
                 </svg>
                 <div>
-                  <p className="font-medium">기록 보존</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-bold">기록 보존</p>
+                  <p className="text-sm">
                     기록 상세보기를 통해 원하는 기록을 보존합니다.
                   </p>
                 </div>
               </div>
-            </div>
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setShowHistoryInfo(false)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                확인
-              </button>
             </div>
           </div>
         </div>
