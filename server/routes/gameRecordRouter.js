@@ -228,4 +228,43 @@ router.patch("/:id/public", apiAuth, gameController.updateGameRecordPublic);
  */
 router.get("/:id", gameController.getGameStageData);
 
+/**
+ * @swagger
+ * /api/game-records/{id}:
+ *   delete:
+ *     tags:
+ *       - Record
+ *     summary: 특정 게임 기록 삭제
+ *     description: 특정 게임 기록을 삭제합니다.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "Bearer {accessToken} 형식의 JWT 토큰"
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "삭제할 게임 기록의 _id"
+ *     responses:
+ *       200:
+ *         description: 게임 기록 삭제 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "게임 기록이 성공적으로 삭제되었습니다."
+ *       404:
+ *         description: 게임 기록이 없음
+ */
+router.delete("/:id", apiAuth, gameController.deleteGameRecord);
+
 module.exports = router;

@@ -729,23 +729,27 @@ const RicochetRobotGame = () => {
     );
   };
 
-  const setRecordedBoard = useCallback(async (recordId) => {
-    if (!recordId.trim()) return; // 빈 문자열 체크
-    
-    const stageData = await getStageData(recordId);
+  const setRecordedBoard = useCallback(
+    async (recordId) => {
+      if (!recordId.trim()) return; // 빈 문자열 체크
 
-    if (stageData) {
-      setBoard(stageData.board);
-      setRobots(stageData.robots);
-      setPrevRobots(stageData.robots);
-      setTarget(stageData.target);
-      setMoveCount(0);
-      setSelectedRobot(null);
-      setHighlightedCells([]);
-      setShowRecordInput(false);
-      setRecordId("");
-    }
-  }, [getStageData]);
+      const stageData = await getStageData(recordId);
+
+      if (stageData) {
+        setBoard(stageData.board);
+        setRobots(stageData.robots);
+        setPrevRobots(stageData.robots);
+        setTarget(stageData.target);
+        setMoveCount(0);
+        setSelectedRobot(null);
+        setHighlightedCells([]);
+        setRecordId("");
+      } else {
+        alert("게임 불러오기 실패");
+      }
+    },
+    [getStageData]
+  );
 
   return (
     <div className="w-full h-full bg-[var(--main-bg)]">
@@ -908,7 +912,10 @@ const RicochetRobotGame = () => {
               </div>
               <div className="space-y-3">
                 <div>
-                  <label htmlFor="recordId" className="block text-sm font-medium mb-2">
+                  <label
+                    htmlFor="recordId"
+                    className="block text-sm font-medium mb-2"
+                  >
                     게임 기록 ID
                   </label>
                   <input
@@ -925,6 +932,8 @@ const RicochetRobotGame = () => {
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
+                        setShowRecordInput(false);
+                        setShowHelp(false);
                         setRecordedBoard(recordId);
                       }
                     }}
@@ -933,7 +942,11 @@ const RicochetRobotGame = () => {
               </div>
               <div className="mt-6 text-center space-x-2">
                 <button
-                  onClick={() => setRecordedBoard(recordId)}
+                  onClick={() => {
+                    setShowRecordInput(false);
+                    setShowHelp(false);
+                    setRecordedBoard(recordId);
+                  }}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   불러오기

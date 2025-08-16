@@ -3,6 +3,7 @@ import {
   saveGameRecord,
   fetchGameRecord,
   fetchGameStageData,
+  deleteGameRecord,
   updateGameRecordPublic,
 } from "../api/gameApi";
 import { getAuthCookie } from "../utils/storage";
@@ -95,11 +96,34 @@ export function useGameRecord() {
     }
   }, []);
 
+  const deleteRecord = useCallback(async (id) => {
+    setLoading(true);
+    try {
+      const token = getAuthCookie();
+      if (!token) {
+        return false;
+      }
+      const [status, data] = await deleteGameRecord(token, id);
+      if (status >= 200 && status < 300) {
+        return true;
+      } else {
+        console.error("API 에러:", status, data.message);
+        return false;
+      }
+    } catch (err) {
+      console.error(err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     saveRecord,
     getRecords,
     updateRecordPublic,
     getStageData,
+    deleteRecord,
     recordLoading: loading,
   };
 }

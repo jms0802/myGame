@@ -36,6 +36,18 @@ export async function fetchGameStageData(record_id) {
   return [ response.status, await response.json() ]
 }
 
+// 게임 기록 삭제
+export async function deleteGameRecord(token, record_id) {
+  const response = await fetch(`${API_URL}/api/game-records/${record_id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return [ response.status, await response.json() ]
+}
+
 export async function getRank() {
   const response = await fetch(`${API_URL}/api/ranks`, {
     method: "GET",

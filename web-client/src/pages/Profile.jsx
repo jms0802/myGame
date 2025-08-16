@@ -9,7 +9,7 @@ import BoardPreview from "../components/Game/BoardPreview";
 
 export default function Profile() {
   const { user, editNickname, isLoading } = useAuth();
-  const { getRecords, updateRecordPublic } = useGameRecord();
+  const { getRecords, updateRecordPublic, deleteRecord } = useGameRecord();
   const { loginWithGoogle } = useGoogleLogin();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
@@ -30,6 +30,9 @@ export default function Profile() {
   const toggleDetails = (id) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
 
   useEffect(() => {
     const fetchUserHistory = async () => {
@@ -162,6 +165,27 @@ export default function Profile() {
       setNickname(user?.nickname);
       setEditing(false);
       setNicknameStatus({ available: true, message: "" });
+    }
+  };
+
+  // 게임 기록 삭제 함수
+  const handleDeleteRecord = async () => {
+    if (!recordToDelete) return;
+    
+    try {
+      const success = await deleteRecord(recordToDelete._id);
+      if (success) {
+        // 삭제 성공 시 목록에서 제거
+        setUserHistory(prev => prev.filter(record => record._id !== recordToDelete._id));
+        setShowDeleteModal(false);
+        setRecordToDelete(null);
+        alert("게임 기록이 삭제되었습니다.");
+      } else {
+        alert("게임 기록 삭제에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("삭제 중 오류:", error);
+      alert("게임 기록 삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -485,17 +509,75 @@ export default function Profile() {
                                 })()}
                               </div>
                             </div>
-                            <button
-                              className="rounded-full px-3 py-1 text-sm font-medium shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                              style={{
-                                background: "var(--btn-default)",
-                                color: "#fff",
-                                fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
-                              }}
-                              onClick={() => toggleDetails(item._id)}
-                            >
-                              {expanded[item._id] ? "접기" : "상세보기"}
-                            </button>
+                            <div className="flex gap-3">
+                              {expanded[item._id] ? (
+                                <button
+                                  className="ml-2 p-1 rounded-full hover:bg-red-100 transition-colors"
+                                  title="기록 삭제"
+                                  onClick={() => {
+                                    setRecordToDelete(item);
+                                    setShowDeleteModal(true);
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="w-5 h-5 text-red-500"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M6 7h12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m2 0v12a2 2 0 01-2 2H8a2 2 0 01-2-2V7m3 4v6m4-6v6"
+                                    />
+                                  </svg>
+                                </button>
+                              ) : (
+                                <></>
+                              )}
+                              <button
+                                className="rounded-full px-2 py-1 text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{
+                                  fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
+                                }}
+                                onClick={() => toggleDetails(item._id)}
+                              >
+                                {expanded[item._id] ? (
+                                  // 접기: 위쪽을 향한 Chevron 아이콘
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="w-5 h-5 inline-block align-middle"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M19.5 15l-7.5-7.5-7.5 7.5"
+                                    />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="w-5 h-5 inline-block align-middle"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M4.5 9l7.5 7.5 7.5-7.5"
+                                    />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                           </div>
 
                           {expanded[item._id] && (
@@ -600,8 +682,7 @@ export default function Profile() {
                                         height: "1.2rem",
                                       }}
                                     />
-                                  </label>
-                                  {item.expireAt && !item.isPublic && (
+                                    {item.expireAt && !item.isPublic && (
                                     <div
                                       className="flex items-center gap-1 text-red-500"
                                       style={{
@@ -610,15 +691,16 @@ export default function Profile() {
                                     >
                                       {(() => {
                                         const expireDate = new Date(item.expireAt);
-                                        return expireDate.toLocaleString("ko-KR", {
-                                          timeZone: "Asia/Seoul",
-                                          dateStyle: "short",
-                                          timeStyle: "medium",
-                                          hour12: false,
-                                        });
+                                        const now = new Date();
+                                        // 1일 = 1000 * 60 * 60 * 24
+                                        const diffTime = expireDate.getTime() - now.getTime();
+                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                        return `D-${diffDays}`;
                                       })()}
                                     </div>
                                   )}
+                                  </label>
+                                  
                                 </div>
                                 <BoardPreview
                                   board={item.stageData?.board}
@@ -740,6 +822,88 @@ export default function Profile() {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 게임 기록 삭제 확인 모달 */}
+      {showDeleteModal && recordToDelete && (
+        <div className="fixed inset-0 bg-gray-500/40 flex items-center justify-center z-50"
+        onClick={() => setShowDeleteModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg p-6 max-w-md mx-4"
+            style={{
+              background: "var(--modal-bg)",
+              color: "var(--main-color)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-red-600">게임 기록 삭제</h3>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setRecordToDelete(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-5 text-red-500 mt-0.5 flex-shrink-0"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                  />
+                </svg>
+                <div>
+                  <p className="font-medium">삭제 확인</p>
+                  <p className="text-sm">
+                    이 게임 기록을 <span className="font-bold text-red-500">영구적으로 삭제</span>하시겠습니까?
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 text-center space-x-2">
+              <button
+                onClick={handleDeleteRecord}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                삭제
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setRecordToDelete(null);
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                취소
+              </button>
             </div>
           </div>
         </div>

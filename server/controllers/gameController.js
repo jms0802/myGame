@@ -60,6 +60,25 @@ exports.saveGameRecord = asyncHandler(async (req, res) => {
   res.status(201).json({ message: "게임 기록 저장 완료" });
 });
 
+exports.deleteGameRecord = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const { id } = req.params;
+
+  // 해당 기록이 존재하는지, 그리고 본인 소유인지 확인
+  const record = await GameRecord.findOne({ _id: id, uid: user.uid });
+  if (!record) {
+    return res
+      .status(404)
+      .json({ message: "해당 게임 기록을 찾을 수 없습니다." });
+  }
+
+  await GameRecord.deleteOne({ _id: id, uid: user.uid });
+
+  return res.status(200).json({
+    message: "게임 기록이 성공적으로 삭제되었습니다.",
+  });
+});
+
 exports.updateGameRecordPublic = asyncHandler(async (req, res) => {
   const user = req.user;
   const { id } = req.params;
