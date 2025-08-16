@@ -20,14 +20,6 @@ const apiAuth = require("../middleware/apiAuth");
  *         schema:
  *           type: string
  *         description: "Bearer {accessToken} 형식의 JWT 토큰"
- *     requestBody:
- *      content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               record_id:
- *                 type: string
  *     responses:
  *       200:
  *         description: 게임 기록 목록 반환 성공
@@ -43,7 +35,7 @@ const apiAuth = require("../middleware/apiAuth");
  *       404:
  *         description: 게임 기록이 없음
  */
-router.get("/", apiAuth, gameController.getGameRecord);
+router.get("/", apiAuth, gameController.getGameRecords);
 
 /**
  * @swagger
@@ -171,5 +163,69 @@ router.post("/", apiAuth, gameController.saveGameRecord);
  *         description: isPublic 값 없음
  */
 router.patch("/:id/public", apiAuth, gameController.updateGameRecordPublic);
+
+/**
+ * @swagger
+ * /api/game-records/{id}:
+ *   patch:
+ *     tags:
+ *       - Record
+ *     summary: 특정 게임 기록 조회
+ *     description: 특정 게임 기록을 조회합니다.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "조회할 게임 기록의 _id"
+ *     responses:
+ *       200:
+ *         description: 게임 기록 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 record:
+ *                   type: object
+ *                   properties:
+ *                     robots:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           color:
+ *                             type: string
+ *                           x:
+ *                             type: integer
+ *                           y:
+ *                             type: integer
+ *                     target:
+ *                       type: object
+ *                       properties:
+ *                         x:
+ *                           type: integer
+ *                         y:
+ *                           type: integer
+ *                         color:
+ *                           type: string
+ *                     board:
+ *                       type: array
+ *                       items:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             walls:
+ *                               type: array
+ *                               items:
+ *                                 type: string
+ *       404:
+ *         description: 게임 기록이 없음
+ */
+router.get("/:id", gameController.getGameStageData);
 
 module.exports = router;

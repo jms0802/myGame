@@ -1,5 +1,10 @@
 import { useState, useCallback } from "react";
-import { saveGameRecord, fetchGameRecord, updateGameRecordPublic } from "../api/gameApi";
+import {
+  saveGameRecord,
+  fetchGameRecord,
+  fetchGameStageData,
+  updateGameRecordPublic,
+} from "../api/gameApi";
 import { getAuthCookie } from "../utils/storage";
 export function useGameRecord() {
   const [loading, setLoading] = useState(false);
@@ -12,15 +17,15 @@ export function useGameRecord() {
       if (!token) return false;
 
       const [status, data] = await saveGameRecord(token, record);
-      
+
       if (status >= 200 && status < 300) {
         return true;
       } else {
-        console.error('API 에러:', status, data.message);
+        console.error("API 에러:", status, data.message);
         return false;
       }
     } catch (err) {
-      console.error('네트워크/기타 에러:', err);
+      console.error("네트워크/기타 에러:", err);
       return false;
     } finally {
       setTimeout(() => setLoading(false), 2000);
@@ -39,7 +44,7 @@ export function useGameRecord() {
       if (status >= 200 && status < 300) {
         return data;
       } else {
-        console.error('API 에러:', status, data.message);
+        console.error("API 에러:", status, data.message);
         return false;
       }
     } catch (err) {
@@ -61,7 +66,25 @@ export function useGameRecord() {
       if (status >= 200 && status < 300) {
         return data.record;
       } else {
-        console.error('API 에러:', status, data.message);
+        console.error("API 에러:", status, data.message);
+        return false;
+      }
+    } catch (err) {
+      console.error(err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getStageData = useCallback(async (record_id) => {setLoading(true);
+    try {
+      const [status, data] = await fetchGameStageData(record_id);
+      
+      if (status >= 200 && status < 300) {
+        return data.stageData;
+      } else {
+        console.error("API 에러:", status, data.message);
         return false;
       }
     } catch (err) {
@@ -76,6 +99,7 @@ export function useGameRecord() {
     saveRecord,
     getRecords,
     updateRecordPublic,
+    getStageData,
     recordLoading: loading,
   };
 }

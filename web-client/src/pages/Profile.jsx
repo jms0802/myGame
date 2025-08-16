@@ -433,7 +433,7 @@ export default function Profile() {
                     <div className="mb-4 text-center">
                       <div className="text-base font-bold text-blue-600 mb-2">
                         <span className="px-2 py-1 rounded">
-                          아직 게임 기록이 없습니다!
+                          게임 기록이 없습니다!
                         </span>
                       </div>
                       <div className="text-sm text-gray-600 italic">

@@ -166,7 +166,7 @@ const RicochetRobotGame = () => {
   const { robots: initialRobots, target: initialTarget } =
     generateUniquePositions();
 
-  const [board] = useState(createInitialBoard);
+  const [board, setBoard] = useState(createInitialBoard);
   const [robots, setRobots] = useState(initialRobots);
   const [selectedRobot, setSelectedRobot] = useState(null);
   const [target, setTarget] = useState(initialTarget);
@@ -176,8 +176,10 @@ const RicochetRobotGame = () => {
   const [showClearMessage, setShowClearMessage] = useState(false);
   const { dark } = useDarkMode();
   const [showHelp, setShowHelp] = useState(false);
+  const [showRecordInput, setShowRecordInput] = useState(false); // 새로운 state 추가
+  const [recordId, setRecordId] = useState(""); // 입력받을 recordId state
 
-  const { saveRecord, recordLoading } = useGameRecord();
+  const { saveRecord, recordLoading, getStageData } = useGameRecord();
   const { authLoading } = useAuth();
 
   // 하이라이트할 셀 계산 (경로 포함) - moveRobot보다 먼저 선언
@@ -727,9 +729,27 @@ const RicochetRobotGame = () => {
     );
   };
 
+  const setRecordedBoard = useCallback(async (recordId) => {
+    if (!recordId.trim()) return; // 빈 문자열 체크
+    
+    const stageData = await getStageData(recordId);
+
+    if (stageData) {
+      setBoard(stageData.board);
+      setRobots(stageData.robots);
+      setPrevRobots(stageData.robots);
+      setTarget(stageData.target);
+      setMoveCount(0);
+      setSelectedRobot(null);
+      setHighlightedCells([]);
+      setShowRecordInput(false);
+      setRecordId("");
+    }
+  }, [getStageData]);
+
   return (
     <div className="w-full h-full bg-[var(--main-bg)]">
-      <Loading isLoading={authLoading}/>
+      {authLoading && <Loading isLoading={authLoading} />}
       <div className="game-container flex flex-col items-center p-4 md:p-8 max-w-screen-md mx-auto">
         <div className="flex items-center justify-between mt-8 mb-10">
           <h1 className="game-title text-2xl font-bold text-center flex-1">
@@ -763,27 +783,171 @@ const RicochetRobotGame = () => {
 
         {/* 게임 설명 모달 */}
         {showHelp && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500/40"
-            onClick={() => setShowHelp(false)}
-          >
+          <div className="fixed inset-0 bg-gray-500/40 flex items-center justify-center z-50">
             <div
-              className="rounded-xl shadow-lg p-6 w-full max-w-xs"
+              className="bg-white rounded-lg p-6 max-w-md mx-4"
               style={{
                 background: "var(--modal-bg)",
                 color: "var(--main-color)",
               }}
-              onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-lg font-bold mb-2">게임 설명</h2>
-              <p className="mb-1"><span className="font-bold text-blue-500">목표:</span> 색깔 원에 해당 로봇을 도달시키세요!</p>
-              <p className="text-sm">로봇은 벽이나 다른 로봇에 부딪힐 때까지 계속 이동합니다.</p>
-              <button
-                className="mt-4 w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                onClick={() => setShowHelp(false)}
-              >
-                닫기
-              </button>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">게임 설명</h3>
+                <button
+                  onClick={() => setShowHelp(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="size-5 text-blue-500 mt-0.5 flex-shrink-0"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                    />
+                  </svg>
+                  <div>
+                    <p className="font-medium">게임 목표</p>
+                    <p className="text-sm">
+                      색깔 원에 해당 로봇을 도달시키세요!
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="size-5 text-green-500 mt-0.5 flex-shrink-0"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div>
+                    <p className="font-medium">게임 규칙</p>
+                    <p className="text-sm">
+                      로봇은 벽이나 다른 로봇에 부딪힐 때까지 계속 이동합니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowRecordInput(true)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  게임 불러오기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 게임 불러오기 입력 모달 */}
+        {showRecordInput && (
+          <div className="fixed inset-0 bg-gray-500/40 flex items-center justify-center z-50">
+            <div
+              className="bg-white rounded-lg p-6 max-w-md mx-4"
+              style={{
+                background: "var(--modal-bg)",
+                color: "var(--main-color)",
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">게임 불러오기</h3>
+                <button
+                  onClick={() => {
+                    setShowRecordInput(false);
+                    setRecordId("");
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor="recordId" className="block text-sm font-medium mb-2">
+                    게임 기록 ID
+                  </label>
+                  <input
+                    type="text"
+                    id="recordId"
+                    value={recordId}
+                    onChange={(e) => setRecordId(e.target.value)}
+                    placeholder="게임 기록 ID를 입력하세요"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{
+                      background: "var(--main-bg)",
+                      color: "var(--main-color)",
+                      borderColor: "var(--main-color)",
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setRecordedBoard(recordId);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="mt-6 text-center space-x-2">
+                <button
+                  onClick={() => setRecordedBoard(recordId)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  불러오기
+                </button>
+                <button
+                  onClick={() => {
+                    setShowRecordInput(false);
+                    setRecordId("");
+                  }}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  취소
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -4,22 +4,10 @@ const GameRecord = require("../models/GameRecord");
 const UserRecord = require("../models/UserRecord");
 const asyncHandler = require("express-async-handler");
 
-exports.getGameRecord = asyncHandler(async (req, res) => {
+//모든 게임 반환
+exports.getGameRecords = asyncHandler(async (req, res) => {
   const user = req.user;
-  const { record_id } = req.body;
 
-  if (record_id) {
-    // id가 전달된 경우 해당 record만 반환
-    const record = await GameRecord.findOne({ _id: record_id, uid: user.uid });
-    if (!record) {
-      return res
-        .status(404)
-        .json({ message: "해당 게임 기록을 찾을 수 없습니다." });
-    }
-    return res.status(200).json({ record });
-  }
-
-  // id가 없으면 전체 기록 반환
   const records = await GameRecord.find({ uid: user.uid }).sort({
     playDate: -1,
   });
@@ -33,6 +21,20 @@ exports.getGameRecord = asyncHandler(async (req, res) => {
   return res.status(200).json({
     records,
   });
+});
+
+//특정 게임 반환
+exports.getGameStageData = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const record = await GameRecord.findOne({ _id: id });
+    if (!record) {
+      return res
+        .status(404)
+        .json({ message: "해당 게임 기록을 찾을 수 없습니다." });
+    }
+    const stageData = record.stageData;
+    return res.status(200).json({ stageData });
 });
 
 exports.saveGameRecord = asyncHandler(async (req, res) => {
